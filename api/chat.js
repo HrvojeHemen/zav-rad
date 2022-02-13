@@ -80,6 +80,10 @@ function chat(io) {
         socket.on("disconnect", function(){
             console.log("Disconnected")
         })
+
+        socket.on("joinRoom", function(roomName){
+            socket.join(roomName)
+        })
     });
 }
 

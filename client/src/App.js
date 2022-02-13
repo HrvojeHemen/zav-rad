@@ -9,13 +9,15 @@ import {
 
 import Room from "./components/Room";
 import SocketTest from "./components/SocketTest";
+import RoomChooser from "./components/RoomChooser"
 
 function App() {
 
     return (
         <BrowserRouter>
             <Routes>
-                <Route path={"/"} element={<Room/>}/>
+                <Route path={"/"} element={<RoomChooser/>}/>
+                <Route path={"play"} element={<Room/>}/>
                 <Route path={"socket"} element={<SocketTest/>}/>
             </Routes>
         </BrowserRouter>

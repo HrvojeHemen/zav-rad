@@ -11,10 +11,11 @@
     "react-player": "^2.9.0",
     "react-scripts": "5.0.0",
     "react-youtube": "^7.14.0",
+    "socket.io-client": "^4.4.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "set PORT=5000 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

@@ -8,9 +8,9 @@ const cors = require("cors");
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const playlistRouter = require('./routes/playlist')
 
 const app = express();
-const port = 3000;
 
 app.use(cors());
 app.use(logger('dev'));
@@ -24,6 +24,7 @@ app.set('view engine', 'jade');
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/playlist', playlistRouter);
 
 
 
@@ -47,12 +48,4 @@ app.use(function(err, req, res, next) {
 
 
 
-const server = require('http').createServer(app)
-
-const io = require('socket.io')(server);
-io.on('connection', function(client) {
-  console.log("connected");
-  client.emit("message", "Some thing to show");
-});
-
-server.listen(port)
+module.exports = app;

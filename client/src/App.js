@@ -1,19 +1,22 @@
 import './App.css';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import io from 'socket.io-client'
 import {
     BrowserRouter,
     Routes,
     Route
 } from "react-router-dom";
-import YoutubeEmbed from "./components/YoutubeEmbed";
+
+import Room from "./components/Room";
+import SocketTest from "./components/SocketTest";
 
 function App() {
 
     return (
         <BrowserRouter>
             <Routes>
-                <Route path={"/"} element={<YoutubeEmbed videoUrl={"https://www.youtube.com/watch?v=hQAHSlTtcmY"}/>}/>
-
+                <Route path={"/"} element={<Room/>}/>
+                <Route path={"socket"} element={<SocketTest/>}/>
             </Routes>
         </BrowserRouter>
 

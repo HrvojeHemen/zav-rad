@@ -1,5 +1,4 @@
-import React, {Component, useEffect, useState} from "react";
-import {socket} from "./socket";
+import React, {Component} from "react";
 import axios from "axios";
 import {Navigate} from "react-router-dom";
 

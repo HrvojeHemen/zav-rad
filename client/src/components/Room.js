@@ -1,7 +1,6 @@
-import React, {Component, useEffect, useState} from "react";
+import React, {Component} from "react";
 import ReactPlayer from "react-player";
-import {io} from "socket.io-client"
-
+import NavBar from "./NavBar";
 import {socket} from "./socket";
 
 class Room extends Component {
@@ -190,6 +189,7 @@ class Room extends Component {
         }
         return (
             <div>
+                <NavBar/>
                 <ReactPlayer
                     ref={this.ref}
                     url={currentSongUrl}

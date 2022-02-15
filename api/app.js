@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
@@ -9,8 +11,8 @@ const cors = require("cors");
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const playlistRouter = require('./routes/playlist')
-const signupRouter = require('./routes/register')
-const session = require('express-session')
+const registerRouter = require('./routes/register')
+const loginRouter = require('./routes/login')
 
 const app = express();
 
@@ -27,7 +29,8 @@ app.set('view engine', 'jade');
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/playlist', playlistRouter);
-app.use('/register', signupRouter);
+app.use('/register', registerRouter);
+app.use('/login', loginRouter)
 
 
 // app.use(session({

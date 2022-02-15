@@ -1,6 +1,5 @@
-import React, {Component, useEffect, useState} from "react";
-import ReactPlayer from "react-player";
-import {io} from "socket.io-client"
+import React, {Component} from "react";
+
 import {Navigate} from "react-router-dom";
 import {socket} from "./socket";
 
@@ -22,7 +21,7 @@ class RoomChooser extends Component {
         if( userName === null ||
             userName.length === 0 ||
             roomName === null ||
-            roomName.length ===0){
+            roomName.length === 0){
             alert("Please enter both Room name and user name")
         }
         socket.emit("joinRoom", roomName)

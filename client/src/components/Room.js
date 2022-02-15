@@ -8,37 +8,35 @@ class Room extends Component {
 
     constructor() {
         super();
+
+        socket.on("playPause", function (data) {
+            console.log("Received play:", data.playing)
+            console.log("Data", data)
+            if (data.playing !== this.state.playing) {
+                console.log("Pausing from different source");
+                this.handlePlayPause();
+                //this.setState({currentTimer : data.timer})
+            }
+        }.bind(this))
+
+        //when one in room starts the game others start it aswell
+        .on("startGame", function (data) {
+            console.log("Start variable in socket req reciever: ", this.state.started)
+            if (!this.state.started) {
+                this.startGame()
+            }
+
+        }.bind(this))
     }
 
 
     componentDidMount() {
-        // this.setState({
-        //     socket: io(`http://${window.location.hostname}:3000`)
-        //         //when one pauses, other pause it aswell, this is reduntant, just for testing
-        //         .on("playPause", function (data) {
-        //             console.log("Received play:", data.playing)
-        //             console.log("Data", data)
-        //             if (data.playing !== this.state.playing) {
-        //                 console.log("Pausing from different source");
-        //                 this.handlePlayPause();
-        //                 //this.setState({currentTimer : data.timer})
-        //             }
-        //         }.bind(this))
-        //
-        //         //when one in room starts the game others start it aswell
-        //         .on("startGame", function (data) {
-        //             console.log("Start variable in socket req reciever: ", this.state.started)
-        //             if (!this.state.started) {
-        //                 this.startGame()
-        //             }
-        //
-        //         }.bind(this))
-        // })
+        console.log("Mounted")
     }
 
     state = {
         queue: [],
-        volume: 0.3,
+        volume: 0.05,
         startButtonVisible: true,
         muted: false,
         playing: false,
@@ -46,8 +44,7 @@ class Room extends Component {
         loaded: 0,
         started: false,
         currentTimer: null,
-        socket: null,
-        ready: false
+        ready: false,
     }
 
 
@@ -112,7 +109,8 @@ class Room extends Component {
     }
 
     handleSkipToRandomPart = () => {
-        let rand = Math.random() * 0.7;
+        let rand = this.state.queue[0]["startTimestamp"];
+        console.log("Seeking to", rand)
         this.player.seekTo(rand);
     }
     handleProgress = state => {
@@ -124,6 +122,7 @@ class Room extends Component {
         if (this.state.started) {
             return;
         }
+
         let res;
         fetch("http://localhost:3000/playlist")
             .then(res => res.json())
@@ -132,26 +131,19 @@ class Room extends Component {
                     console.log(result)
                     res = result["songs"];
                 },
-                // Note: it's important to handle errors here
-                // instead of a catch() block so that we don't swallow
-                // exceptions from actual bugs in components.
                 (error) => {
-                    console.log("Error in api fetch")
-                    this.setState({
-                        isLoaded: true,
-                        error
-                    });
+                    console.log("Error in api fetch", error)
                 }
             ).then(
             () => {
-                console.log("State of this.started in StartGame", this.state.started)
-                this.setState({queue: res, startButtonVisible: false, started: true}, () => {
-                    console.log("State of this.started after changing in StartGame", this.state.started)
-                    console.log("Queue before preparing new track", this.state.queue)
+                    console.log("State of this.started in StartGame", this.state.started)
+                    this.setState({queue: res, startButtonVisible: false, started: true}, () => {
+                        console.log("State of this.started after changing in StartGame", this.state.started)
+                        console.log("Queue before preparing new track", this.state.queue)
 
-                    this.prepareNewTrack();
+                        this.prepareNewTrack();
 
-                    socket.emit("startGame", this.state.queue)
+                        socket.emit("startGame", this.state.queue)
                 })
             })
 
@@ -192,11 +184,15 @@ class Room extends Component {
 
     render() {
         const {volume, muted, playing, queue, played, loaded, started, ready} = this.state;
+        let currentSongUrl = undefined
+        if (queue.length > 0) {
+            currentSongUrl = queue[0]["url"];
+        }
         return (
             <div>
                 <ReactPlayer
                     ref={this.ref}
-                    url={queue[0]}
+                    url={currentSongUrl}
                     volume={volume}
                     muted={muted}
                     playing={playing}
@@ -209,7 +205,7 @@ class Room extends Component {
                 />
 
                 <input type='range' min={0} max={1} step='any' value={volume} onChange={this.handleVolumeChange}/>
-                <button onClick={this.handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>
+                {/*<button onClick={this.handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>*/}
 
                 <label>Ready<input
                     name="ready"

@@ -5,20 +5,12 @@ import {Navigate} from "react-router-dom";
 import {socket} from "./socket";
 
 class RoomChooser extends Component {
-    constructor() {
-        super();
-    }
 
     componentDidMount() {
         console.log("Component did mount")
-        // this.setState({
-        //     socket: io(`http://${window.location.hostname}:3000`)
-        // }, () => { console.log("Socket is: " + this.state.socket)})
-
     }
 
     state = {
-        socket: null,
         userName: null,
         roomName: null,
         redirect : false

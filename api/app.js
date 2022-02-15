@@ -9,6 +9,8 @@ const cors = require("cors");
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const playlistRouter = require('./routes/playlist')
+const signupRouter = require('./routes/register')
+const session = require('express-session')
 
 const app = express();
 
@@ -25,9 +27,19 @@ app.set('view engine', 'jade');
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/playlist', playlistRouter);
+app.use('/register', signupRouter);
 
 
-
+// app.use(session({
+//   secret: process.env.SESSION_SECRET,
+//   saveUninitialized: false,
+//   resave: false,
+//   cookie: {
+//     httpOnly: true,
+//     maxAge: 60 * 60 * 1000
+//   }
+//
+// }))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

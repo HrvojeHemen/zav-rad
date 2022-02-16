@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import axios from "axios";
 import NavBar from "./NavBar";
-import auth from "./useTokenClass";
+import {auth} from "./useTokenClass";
 import jwt from "jsonwebtoken"
 
 

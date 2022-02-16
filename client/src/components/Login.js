@@ -3,7 +3,7 @@ import axios from "axios";
 import NavBar from "./NavBar";
 import {Navigate} from "react-router-dom";
 
-import auth from "./useTokenClass";
+import {auth} from "./useTokenClass";
 
 
 class Login extends Component {
@@ -11,13 +11,11 @@ class Login extends Component {
     state = {
         userName: null,
         password: null,
-        redirect: auth.token !== undefined
+        redirect: !!auth.token
     }
 
     handleSubmit = (event) => {
         event.preventDefault();
-
-
 
         let {userName, password} = this.state;
 
@@ -35,7 +33,7 @@ class Login extends Component {
                     let loginToken = r.data.token;
                     console.log("Token", loginToken)
                     auth.saveToken(loginToken)
-                     console.log("Auth token", auth.token)
+                    console.log("Auth token", auth.token)
 
                     this.setState({redirect: true})
                 }
@@ -44,9 +42,10 @@ class Login extends Component {
 
     render() {
         console.log("Current token:", auth.token)
+        console.log("Redirect", this.state.redirect)
         const {redirect} = this.state;
         if(redirect){
-            return <Navigate to={"/play"}/>
+            return <Navigate to={"/choose-room"}/>
         }
 
         return (

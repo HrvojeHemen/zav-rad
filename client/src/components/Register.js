@@ -1,7 +1,8 @@
 import React, {Component} from "react";
 import axios from "axios";
 import {Navigate} from "react-router-dom";
-
+import NavBar from "./NavBar";
+import {auth} from "./useTokenClass";
 
 class Register extends Component {
 
@@ -10,7 +11,7 @@ class Register extends Component {
         userName: null,
         password: null,
         password2: null,
-        redirect: false
+        redirect: !!auth.token
     }
 
     handleSubmit = (event) => {
@@ -36,12 +37,10 @@ class Register extends Component {
                 }
             })
 
-
-        //console.log(this.state)
-
     }
 
     render() {
+
         const {redirect} = this.state;
         if(redirect){
             return <Navigate to={"/login"}/>
@@ -52,6 +51,7 @@ class Register extends Component {
 
 
             <div>
+                <NavBar/>
                 REGISTER PAGE
                 <form onSubmit={this.handleSubmit}>
                     <label>Mail:

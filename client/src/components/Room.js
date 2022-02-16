@@ -182,7 +182,7 @@ class Room extends Component {
 
 
     render() {
-        const {volume, muted, playing, queue, played, loaded, started, ready} = this.state;
+        const {volume, muted, playing, queue, played, started, ready} = this.state;
         let currentSongUrl = undefined
         if (queue.length > 0) {
             currentSongUrl = queue[0]["url"];

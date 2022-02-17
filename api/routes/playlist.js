@@ -36,13 +36,46 @@ router.get('/', async function (req, res, next) {
     res.json(formattedPlaylist);
 });
 
+router.get('/all', async function (req, res, next) {
+    let playlists = await getAllPlaylists();
+    res.json(playlists);
+});
+router.get('/test', async function (req, res, next) {
+    await createSong()
+    res.sendStatus(304);
+})
+
+getAllPlaylists = async function () {
+    let res = await db.query(`SELECT *
+                              from playlists`);
+    return res.rows;
+}
+
 router.post("/", async function (req, res, next) {
     console.log("Body: ", req.body)
     let {playlistName, urls, creatorId} = req.body;
 
-    //TODO HARDCODEANO JE CREATOR ID UVIJEK 0
-    let playlistId = createPlaylist(playlistName, 0)
 
+    try{
+        let playlist_id = await createPlaylist(playlistName, creatorId)
+
+        for (const url of urls) {
+            let trimmed = url.trim();
+            if(trimmed.length > 0){
+                try{
+                    let songId = await createSong(playlist_id, trimmed);
+                    console.log("Created song with id", songId)
+                }
+                catch(err){
+                    console.log("Error while creating song", err)
+                }
+
+            }
+        }
+    }
+    catch(err){
+        console.log("Error while creating playlist", err)
+    }
 
 
 });
@@ -56,12 +89,21 @@ createPlaylist = async function (playlistName, creatorId) {
     return res.rows[0]['id']
 }
 
-createSong = async function (playlistId, url) {
+createSong = async function (playlist_id, url) {
+    console.log(`Creating song with url "${url}"`, "and id", playlist_id)
     let info = await ytdl.getBasicInfo(url);
     let title = info['videoDetails']['title']
+    let spl = title.split('-');
 
-    let spl = title.split('-')
+    let token1 = spl[0];
+    let token2 = spl[1] ? spl[1] : "";
 
+    let res = await db.query(`
+        insert into songs(playlist_id, url, token1, token2)
+        values ('${playlist_id}', '${url}', '${token1}', '${token2}')
+        returning id
+    `)
+    return res['rows'][0]['id']
 
 }
 

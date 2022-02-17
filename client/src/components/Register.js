@@ -3,6 +3,7 @@ import axios from "axios";
 import {Navigate} from "react-router-dom";
 import NavBar from "./NavBar";
 import {auth} from "./useTokenClass";
+import {Button, Center, FormControl, FormLabel, Input} from "@chakra-ui/react";
 
 class Register extends Component {
 
@@ -23,17 +24,16 @@ class Register extends Component {
         }
 
         axios.post('http://localhost:3000/register',
-                {
-                    "mail": mail,
-                    "username":userName,
-                    "password":password
-                })
+            {
+                "mail": mail,
+                "username": userName,
+                "password": password
+            })
             .then(r => {
-                if(r.data.err){
+                if (r.data.err) {
                     alert(r.data.err)
-                }
-                else{
-                    this.setState({redirect:true})
+                } else {
+                    this.setState({redirect: true})
                 }
             })
 
@@ -42,55 +42,59 @@ class Register extends Component {
     render() {
 
         const {redirect} = this.state;
-        if(redirect){
+        if (redirect) {
             return <Navigate to={"/login"}/>
         }
 
         return (
 
 
-
             <div>
                 <NavBar/>
-                REGISTER PAGE
-                <form onSubmit={this.handleSubmit}>
-                    <label>Mail:
-                        <input type="email"
-                               name={"mail"}
-                               required={true}
-                               onChange={(e) => this.setState({mail: e.target.value})}
-                        />
-                    </label>
-                    <br/>
-                    <label>UserName:
-                        <input type="text"
-                               name={"userName"}
-                               required={true}
-                               onChange={(e) => this.setState({userName: e.target.value})}
-                        />
-                    </label>
-                    <br/>
-                    <label>Password:
-                        <input type="password"
-                               name={"password"}
-                               required={true}
-                               onChange={(e) => this.setState({password: e.target.value})}
-                        />
-                    </label>
-                    <br/>
-                    <label>Confirm Password:
-                        <input type="password"
-                               name={"password2"}
-                               required={true}
-                               onChange={(e) => this.setState({password2: e.target.value})}
-                        />
-                    </label>
-                    <br/>
+                <Center>
+                    <form onSubmit={this.handleSubmit}>
 
-                    <input type="submit"/>
-                </form>
+                        <FormControl isRequired>
+                            <FormLabel htmlFor='userName'>User name</FormLabel>
+                            <Input type="text"
+                                   name={"userName"}
+                                   required={true}
+                                   onChange={(e) => this.setState({userName: e.target.value})}
+                            />
+
+                        </FormControl>
+
+                        <FormControl isRequired>
+                            <FormLabel htmlFor='email'>E-mail</FormLabel>
+                            <Input type="email"
+                                   name={"mail"}
+                                   required={true}
+                                   onChange={(e) => this.setState({mail: e.target.value})}
+                            />
+                        </FormControl>
 
 
+                        <FormControl isRequired>
+                            <FormLabel htmlFor='password'>Password</FormLabel>
+                            <Input type="password"
+                                   name={"password"}
+                                   required={true}
+                                   onChange={(e) => this.setState({password: e.target.value})}
+                            />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormLabel htmlFor='password2'>Confirm password</FormLabel>
+                            <Input type="password"
+                                   name={"password2"}
+                                   required={true}
+                                   onChange={(e) => this.setState({password2: e.target.value})}
+                            />
+                        </FormControl>
+
+                        <Button type="submit" colorScheme='blue' margin={"5px 0"}>REGISTER</Button>
+                    </form>
+
+                </Center>
             </div>
         )
     }

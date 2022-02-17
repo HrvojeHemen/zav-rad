@@ -8,8 +8,9 @@ class Token {
         this.token = localStorage.getItem('token')
         if (this.token == null){
             this.token = undefined;
+            console.log("Non existent", this.token)
         }
-        console.log("Non existant", this.token)
+
     }.bind(this)
 
     saveToken = function (userToken) {

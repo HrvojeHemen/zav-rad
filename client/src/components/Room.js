@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import ReactPlayer from "react-player";
 import NavBar from "./NavBar";
 import {socket} from "./socket";
+import { Button, Checkbox, Input, Progress, VStack} from '@chakra-ui/react'
 
 class Room extends Component {
 
@@ -18,14 +19,14 @@ class Room extends Component {
             }
         }.bind(this))
 
-        //when one in room starts the game others start it aswell
-        .on("startGame", function (data) {
-            console.log("Start variable in socket req reciever: ", this.state.started)
-            if (!this.state.started) {
-                this.startGame()
-            }
+            //when one in room starts the game others start it aswell
+            .on("startGame", function (data) {
+                console.log("Start variable in socket req reciever: ", this.state.started)
+                if (!this.state.started) {
+                    this.startGame()
+                }
 
-        }.bind(this))
+            }.bind(this))
     }
 
 
@@ -34,6 +35,7 @@ class Room extends Component {
     }
 
     state = {
+        playlistIdsForThisUser: [],
         queue: [],
         volume: 0.05,
         startButtonVisible: true,
@@ -135,14 +137,14 @@ class Room extends Component {
                 }
             ).then(
             () => {
-                    console.log("State of this.started in StartGame", this.state.started)
-                    this.setState({queue: res, startButtonVisible: false, started: true}, () => {
-                        console.log("State of this.started after changing in StartGame", this.state.started)
-                        console.log("Queue before preparing new track", this.state.queue)
+                console.log("State of this.started in StartGame", this.state.started)
+                this.setState({queue: res, startButtonVisible: false, started: true}, () => {
+                    console.log("State of this.started after changing in StartGame", this.state.started)
+                    console.log("Queue before preparing new track", this.state.queue)
 
-                        this.prepareNewTrack();
+                    this.prepareNewTrack();
 
-                        socket.emit("startGame", this.state.queue)
+                    socket.emit("startGame", this.state.queue)
                 })
             })
 
@@ -204,24 +206,25 @@ class Room extends Component {
                     onProgress={this.handleProgress}
                 />
 
-                <input type='range' min={0} max={1} step='any' value={volume} onChange={this.handleVolumeChange}/>
-                {/*<button onClick={this.handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>*/}
+                <VStack>
+                    <Input type='range' min={0} max={1} step='any' value={volume} onChange={this.handleVolumeChange}
+                           width={"20%"}/>
+                    {/*<button onClick={this.handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>*/}
+                    {
+                        ready ?
+                            <Button onClick={this.handleReadyChange} colorScheme={"red"}>{'Unready'}</Button>
+                            :
+                            <Button onClick={this.handleReadyChange} colorScheme={"blue"}>{'Ready'}</Button>
+                    }
 
-                <label>Ready<input
-                    name="ready"
-                    type="checkbox"
-                    checked={ready}
-                    onChange={this.handleReadyChange}
-                /></label>
 
 
-                <button onClick={this.handleSkipToRandomPart}>{'Random'}</button>
-                <div>
-                    {started ? <div>true</div> : <div>false</div>}
-                </div>
-                {this.state.startButtonVisible && <button onClick={this.startGame}>{'Start Game'}</button>}
-                <br/>
-                <progress max={1} value={played}/>
+                    <Button onClick={this.handleSkipToRandomPart}>{'Random'}</Button>
+                    {this.state.startButtonVisible && <Button onClick={this.startGame}>{'Start Game'}</Button>}
+                    <Progress max={1} value={played} width={"20%"}/>
+                </VStack>
+
+
             </div>
         )
     }

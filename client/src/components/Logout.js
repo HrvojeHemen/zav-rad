@@ -3,6 +3,8 @@ import {auth} from "./useTokenClass";
 import {Navigate} from "react-router-dom";
 import NavBar from "./NavBar";
 
+import {Button, Center} from '@chakra-ui/react'
+
 class Logout extends Component {
 
     state = {
@@ -26,8 +28,10 @@ class Logout extends Component {
 
             <div>
                 <NavBar/>
-                LOGOUT PAGE
-                <button onClick={this.logout}>LOG OUT</button>
+                <Center>
+                    <Button colorScheme={'blue'} onClick={this.logout}>LOG OUT</Button>
+                </Center>
+
             </div>
         )
     }

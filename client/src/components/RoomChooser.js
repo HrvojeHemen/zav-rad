@@ -3,6 +3,7 @@ import React, {Component} from "react";
 import {Navigate} from "react-router-dom";
 import {socket} from "./socket";
 import NavBar from "./NavBar";
+import {Button, Center, FormControl, FormLabel, Input} from "@chakra-ui/react";
 
 class RoomChooser extends Component {
 
@@ -38,19 +39,20 @@ class RoomChooser extends Component {
 
             <div>
                 <NavBar />
+                <Center>
                 <form onSubmit={this.handleSubmit}>
-                    <br/>
-                    <label>RoomName:
-                        <input type="text"
+                    <FormControl isRequired>
+                        <FormLabel htmlFor='roomName'>Room Name</FormLabel>
+                        <Input type="text"
                                name={"roomName"}
                                onChange={(e) => this.setState({roomName: e.target.value})}
                         />
-                    </label>
+                    </FormControl>
 
                     <br/>
-                    <input type="submit" />
+                    <Button type="submit" colorScheme='blue'>JOIN</Button>
                 </form>
-
+                </Center>
 
             </div>
         )

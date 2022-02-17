@@ -4,6 +4,7 @@ import NavBar from "./NavBar";
 import {Navigate} from "react-router-dom";
 
 import {auth} from "./useTokenClass";
+import {Button, Center, FormControl, FormLabel, Input} from "@chakra-ui/react";
 
 
 class Login extends Component {
@@ -52,28 +53,29 @@ class Login extends Component {
 
             <div>
                 <NavBar />
-                LOGIN PAGE
+
+                <Center>
                 <form onSubmit={this.handleSubmit}>
-                    <label>UserName:
-                        <input type="text"
+                    <FormControl isRequired>
+                    <FormLabel htmlFor='userName'>User name</FormLabel>
+                        <Input type="text"
                                name={"userName"}
-                               required={true}
                                onChange={(e) => this.setState({userName: e.target.value})}
                         />
-                    </label>
-                    <br/>
-                    <label>Password:
-                        <input type="password"
+                    </FormControl>
+                    <FormControl isRequired>
+                    <FormLabel htmlFor='password'>Password</FormLabel>
+                        <Input type="password"
                                name={"password"}
                                required={true}
                                onChange={(e) => this.setState({password: e.target.value})}
                         />
-                    </label>
-                    <br/>
-                    <input type="submit"/>
+                    </FormControl>
+
+                    <Button type="submit" colorScheme='blue' margin={"5px 0"}>LOG IN</Button>
                 </form>
 
-
+                </Center>
             </div>
         )
     }

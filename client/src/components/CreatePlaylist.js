@@ -17,10 +17,19 @@ class CreatePlaylist extends Component {
         let {name, urls} = this.state;
         let decoded = jwt.decode(auth.token)
         console.log(decoded)
+
+        let splitUrls = urls.split(",")
+
+        let formattedUrls = []
+
+        splitUrls.forEach(url => {
+            formattedUrls.push(url.trim())
+        })
+
         axios.post('http://localhost:3000/playlist',
             {
                 "playlistName":name,
-                "urls":urls,
+                "urls":formattedUrls,
                 "creatorId": decoded.id
             })
             .then(r => {
@@ -28,8 +37,6 @@ class CreatePlaylist extends Component {
                     alert(r.data.err)
                 }
                 else{
-
-
                     console.log("Decoded", decoded)
 
                 }

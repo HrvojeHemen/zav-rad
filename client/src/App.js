@@ -14,8 +14,10 @@ import RoomChooser from "./components/RoomChooser"
 import Login from "./components/Login";
 import Register from "./components/Register"
 import Logout from "./components/Logout"
-// import CreatePlaylist from "./components/CreatePlaylist";
 import Room from "./components/Room";
+import CreatePlaylist from "./components/CreatePlaylist";
+
+import { ChakraProvider } from '@chakra-ui/react'
 
 
 let isLoggedIn = function () {
@@ -43,36 +45,41 @@ let PrivateRoute = function () {
 
 function App() {
     return (
-        <BrowserRouter>
-            <Routes>
+        <ChakraProvider>
+            <BrowserRouter>
+                <Routes>
 
-                <Route exact path={"/"} element={<Navigate to={"/login"}/>}/>
+                    <Route exact path={"/"} element={<Navigate to={"/login"}/>}/>
 
-                {/*IF LOGGED IN GO TO /, OTHERWISE GO TO LOGIN OR REGISTER*/}
-                <Route path={"/login"} element={<Login/>}/>
-
-                <Route path={"/register"} element={<Register/>}/>
-
-
-                <Route path='/choose-room' element={<PrivateRoute/>}>
-                    <Route path='/choose-room' element={<RoomChooser/>}/>
-                </Route>
-
-                <Route path='/play' element={<PrivateRoute/>}>
-                    <Route path='/play' element={<Room/>}/>
-                </Route>
+                    {/*IF LOGGED IN GO TO /, OTHERWISE GO TO LOGIN OR REGISTER*/}
+                    <Route path={"/login"} element={<Login/>}/>
+                    <Route path={"/register"} element={<Register/>}/>
 
 
-                <Route path='/logout' element={<PrivateRoute/>}>
-                    <Route path='/logout' element={<Logout/>}/>
-                </Route>
+                    <Route path='/choose-room' element={<PrivateRoute/>}>
+                        <Route path='/choose-room' element={<RoomChooser/>}/>
+                    </Route>
+
+                    <Route path='/play' element={<PrivateRoute/>}>
+                        <Route path='/play' element={<Room/>}/>
+                    </Route>
 
 
-                {/*DEFAULT ROUTE*/}
-                {/*<Route path={"*"} element={<Navigate to={"/"}/>}/>*/}
+                    <Route path='/logout' element={<PrivateRoute/>}>
+                        <Route path='/logout' element={<Logout/>}/>
+                    </Route>
 
-            </Routes>
-        </BrowserRouter>
+                    <Route path='/create-playlist' element={<PrivateRoute/>}>
+                        <Route path='/create-playlist' element={<CreatePlaylist/>}/>
+                    </Route>
+
+
+                    {/*DEFAULT ROUTE*/}
+                    <Route path={"*"} element={<Navigate to={"/"}/>}/>
+
+                </Routes>
+            </BrowserRouter>
+        </ChakraProvider>
 
     );
 }

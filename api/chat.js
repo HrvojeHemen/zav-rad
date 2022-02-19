@@ -76,6 +76,11 @@ function chat(io) {
             console.log("Starting game")
             io.to("room").emit("startGame", data)
         })
+        socket.on("chatMessage", function(data){
+            console.log("Emitting chat message to the game room")
+            console.log(data)
+            io.to("room").emit("chatMessage", data)
+        })
 
         socket.on("disconnect", function(){
             console.log("Disconnected")

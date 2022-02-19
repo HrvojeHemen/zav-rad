@@ -42,8 +42,6 @@ class Login extends Component {
     }
 
     render() {
-        console.log("Current token:", auth.token)
-        console.log("Redirect", this.state.redirect)
         const {redirect} = this.state;
         if(redirect){
             return <Navigate to={"/choose-room"}/>

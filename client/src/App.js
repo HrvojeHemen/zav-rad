@@ -1,12 +1,6 @@
 import './App.css';
 import React from 'react';
-import {
-    BrowserRouter,
-    Routes,
-    Route,
-    Navigate,
-    Outlet
-} from "react-router-dom";
+import {BrowserRouter, Navigate, Outlet, Route, Routes} from "react-router-dom";
 
 import {auth} from "./components/useTokenClass";
 
@@ -17,28 +11,26 @@ import Logout from "./components/Logout"
 import Room from "./components/Room";
 import CreatePlaylist from "./components/CreatePlaylist";
 
-import { ChakraProvider } from '@chakra-ui/react'
+import {ChakraProvider} from '@chakra-ui/react'
 
 
 let isLoggedIn = function () {
     const token = auth.token;
-    let loggedIn = token !== undefined && token !== null;
-    console.log("Login status,", loggedIn)
-    return loggedIn
+    //console.log("Login status,", loggedIn)
+    return token !== undefined && token !== null
 }
 
 
 let PrivateRoute = function () {
-    const token = auth.token
-    console.log("Token", token, !!token)
+    //console.log("Token", token, !!token)
 
     // If authorized, return an outlet that will render child elements
     // If not, return element that will navigate to login page
     if (isLoggedIn()) {
-        console.log("Returning outlet, token exists")
+        //console.log("Returning outlet, token exists")
         return <Outlet/>
     } else {
-        console.log("Returning /, token doesn't exists")
+        //console.log("Returning /, token doesn't exists")
         return <Navigate to="/"/>
     }
 }

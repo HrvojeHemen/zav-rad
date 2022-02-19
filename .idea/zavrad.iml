@@ -5,6 +5,10 @@
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/client/build" />
+      <excludeFolder url="file://$MODULE_DIR$/nginx-1.20.2" />
+      <excludeFolder url="file://$MODULE_DIR$/nginx-1.20.2/logs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -1,5 +1,5 @@
 import {Link} from "react-router-dom";
-import {Flex, HStack, Stack, Text} from "@chakra-ui/react";
+import {HStack, Text} from "@chakra-ui/react";
 
 const {Component} = require("react");
 
@@ -29,7 +29,7 @@ class NavBar extends Component {
             <MenuItem to={"/register"}>Register</MenuItem>
             <MenuItem to={"/choose-room"}>Choose room</MenuItem>
             <MenuItem to={"/logout"}>Log out</MenuItem>
-            <MenuItem to={"/create"}>Create Playlist</MenuItem>
+            <MenuItem to={"/create-playlist"}>Create Playlist</MenuItem>
 
         </HStack>
 

@@ -3,6 +3,7 @@ import axios from "axios";
 import NavBar from "./NavBar";
 import {auth} from "./useTokenClass";
 import jwt from "jsonwebtoken"
+import {Button, Center, FormControl, FormLabel, Input, Text, Textarea} from "@chakra-ui/react";
 
 
 class CreatePlaylist extends Component {
@@ -18,7 +19,7 @@ class CreatePlaylist extends Component {
         let decoded = jwt.decode(auth.token)
         console.log(decoded)
 
-        let splitUrls = urls.split(",")
+        let splitUrls = urls.split("\n")
 
         let formattedUrls = []
 
@@ -49,30 +50,29 @@ class CreatePlaylist extends Component {
 
             <div>
                 <NavBar />
-                CREATE PLAYLIST PAGE
+                <Center>
                 <form onSubmit={this.handleSubmit}>
-                    <label>Playlist Name:
-                        <input type="text"
+                    <FormControl isRequired>
+                        <FormLabel htmlFor='userName'>Playlist Name:</FormLabel>
+                        <Input type="text"
                                name={"name"}
-                               required={true}
                                onChange={(e) => this.setState({name: e.target.value})}
                         />
-                    </label>
-                    <br/>
-                    <label>Song urls separated by comma:
-                        <br/>
-                        <textarea
-                               rows={30}
+                    </FormControl>
+
+                    <Text>Song urls separated by comma:
+                        <Textarea
+                               rows={15}
                                cols={50}
                                name={"urls"}
                                required={true}
                                onChange={(e) => this.setState({urls: e.target.value})}
                         />
-                    </label>
+                    </Text>
                     <br/>
-                    <input type="submit"/>
+                    <Button type="submit" colorScheme='blue' margin={"5px 0"}>CREATE PLAYLIST</Button>
                 </form>
-
+                </Center>
 
             </div>
         )

@@ -4,8 +4,10 @@ import {Navigate} from "react-router-dom";
 import {socket} from "./socket";
 import NavBar from "./NavBar";
 import {Button, Center, FormControl, FormLabel, Input} from "@chakra-ui/react";
-
+import {auth} from "./useTokenClass";
+import jwt from "jsonwebtoken";
 class RoomChooser extends Component {
+    decoded = jwt.decode(auth.token)
 
     componentDidMount() {
         console.log("Component did mount")
@@ -24,7 +26,7 @@ class RoomChooser extends Component {
             roomName.length === 0){
             alert("Please enter both Room name and user name")
         }
-        socket.emit("joinRoom", roomName)
+        socket.emit("joinRoom", {"roomName": roomName, "userId":this.decoded.id, "username": this.decoded.username })
         this.setState({redirect:true})
         console.log("Entered: ",roomName)
 

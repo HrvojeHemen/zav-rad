@@ -21,12 +21,12 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static("public"));
 app.set('view engine', 'jade');
 
 
 
-app.use('/', indexRouter);
+app.use('/', indexRouter)
 app.use('/users', usersRouter);
 app.use('/playlist', playlistRouter);
 app.use('/register', registerRouter);
@@ -49,6 +49,13 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
+app.use(function (req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
+});
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development

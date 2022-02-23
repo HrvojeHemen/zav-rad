@@ -28,8 +28,7 @@ class NavBar extends Component {
             <MenuItem to={"/login"}>Log In</MenuItem>
             <MenuItem to={"/register"}>Register</MenuItem>
             <MenuItem to={"/choose-room"}>Choose room</MenuItem>
-            <MenuItem to={"/logout"}>Log out</MenuItem>
-            <MenuItem to={"/create-playlist"}>Create Playlist</MenuItem>
+            <MenuItem to={"/profile"}>Profile</MenuItem>
 
         </HStack>
 

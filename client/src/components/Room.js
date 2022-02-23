@@ -17,12 +17,12 @@ import {
     VStack
 } from '@chakra-ui/react'
 import jwt from "jsonwebtoken";
-import * as PropTypes from "prop-types";
 
 
 class Room extends Component {
+    amountOfSongs = 15;
     decoded = jwt.decode(auth.token)
-    songLength = 12000;
+    songLength = 15000;
     // 1 / allowedDistance, 5 -> 20% mistake allowed
     allowedDistance = 5
     fuzzball = require('fuzzball');
@@ -31,7 +31,7 @@ class Room extends Component {
     componentDidMount() {
         //console.log("Mounted")
         //console.log(this.decoded)
-        fetch("http://localhost:3000/playlist/user/" + this.decoded.id)
+        fetch(process.env.REACT_APP_API_URL + "/playlist/user/" + this.decoded.id)
             .then(res => res.json())
             .then(
                 (result) => {
@@ -78,7 +78,28 @@ class Room extends Component {
             .on("chatMessage", function (data) {
                 this.handleMessageReceived(data);
             }.bind(this))
+            .on("scoreBoardUpdate", function (data) {
+                    this.handleScoreBoardUpdate(data);
+                }.bind(this)
+            )
 
+    }
+
+    handleScoreBoardUpdate = function (data) {
+        let newScores = []
+        for (let i = 0; i < data.length; i++) {
+            let {score, username} = data[i]
+            newScores.push(
+                {
+                    "score": score,
+                    "username": username
+                }
+            )
+        }
+        console.log(newScores)
+        this.setState({scores: data}, () => {
+            console.log("Received score update", newScores)
+        })
     }
 
     state = {
@@ -100,7 +121,8 @@ class Room extends Component {
         token1Correct: false,
         token2Correct: false,
         artistDisplay: "",
-        songDisplay: ""
+        songDisplay: "",
+        scores: []
     }
 
 
@@ -260,6 +282,10 @@ class Room extends Component {
         //     console.log(song.startTimestamp)
         // }
 
+        if(newSelectedPlaylist.length > this.amountOfSongs){
+            newSelectedPlaylist = newSelectedPlaylist.slice(0,this.amountOfSongs)
+        }
+
 
         this.setState({
                 queue: [...newSelectedPlaylist.songs],
@@ -286,9 +312,9 @@ class Room extends Component {
     }
 
     handleMessageSend = function (message) {
-        let {queue} = this.state;
+        let {queue, token1Correct, token2Correct} = this.state;
         let song = queue[0]
-        if(song){
+        if (song) {
             var {token1, token2} = song
         }
 
@@ -296,9 +322,11 @@ class Room extends Component {
             "source": this.decoded.id,
             "username": this.decoded.username,
             "message": message,
-            "token1": this.checkToken(token1, message),
-            "token2": this.checkToken(token2, message),
-            "tokenBoth": this.checkToken(token1 + " " + token2, message)
+
+            //we && with token1c and token2c so that only first guess is valid
+            "token1": this.checkToken(token1, message) && !token1Correct,
+            "token2": this.checkToken(token2, message) && !token2Correct,
+            "tokenBoth": this.checkToken(token1 + " " + token2, message) && !token1Correct && !token2Correct
         })
     }.bind(this)
 
@@ -307,9 +335,15 @@ class Room extends Component {
             return false
         }
 
+        let noWhiteSpaceExpected = expected.replace(/\s+/g, '')
+        let noWhiteSpaceMessage = message.replace(/\s+/g, '')
+
+
         let diff = this.fuzzball.token_set_ratio(expected, message)
-        let res = diff > 80 && Math.abs(expected.length - message.length) < 5
-        console.log(expected," | " ,message, res, diff)
+        let noWhiteSpaceDiff = this.fuzzball.token_set_ratio(noWhiteSpaceExpected, noWhiteSpaceMessage)
+        let res = (diff > 80 || noWhiteSpaceDiff > 80) && Math.abs(expected.length - message.length) < 5
+        console.log(noWhiteSpaceExpected, " | ", noWhiteSpaceMessage)
+        console.log(expected, " | ", message, res, diff, noWhiteSpaceDiff)
         return res
 
     }.bind(this)
@@ -329,15 +363,14 @@ class Room extends Component {
         let {token1Correct, token2Correct} = this.state;
 
         let guessedCount = 0;
-        if((token1 && !token1Correct) || (tokenBoth && !token1Correct)){
+        if ((token1 && !token1Correct) || (tokenBoth && !token1Correct)) {
             guessedCount++;
             this.setState({token1Correct: true, artistDisplay: queue[0]['token1']})
         }
-        if((token2 && !token2Correct) || (tokenBoth && !token2Correct)){
+        if ((token2 && !token2Correct) || (tokenBoth && !token2Correct)) {
             guessedCount++;
             this.setState({token2Correct: true, songDisplay: queue[0]['token2']})
         }
-
 
 
         this.setState({
@@ -386,8 +419,9 @@ class Room extends Component {
 
     render() {
         const {
-            volume, muted, playing, queue, played, started,
-            ready, playlistsForThisUser, chatMessages, artistDisplay, songDisplay
+            volume, muted, playing, queue, played,
+            ready, playlistsForThisUser, chatMessages, artistDisplay, songDisplay, scores, currentTimer,
+            startButtonVisible
         } = this.state;
         let currentSongUrl = undefined
         if (queue.length > 0) {
@@ -410,95 +444,131 @@ class Room extends Component {
                     onProgress={this.handleProgress}
                 />
 
-                <Center>
-                    <VStack maxHeight="90%" width={"50%"}>
+                <Center marginTop={"3%"}>
+                    <HStack width={"90%"} alignItems={"start"}>
+                        <VStack width={"30%"}>
+                            <Text>Scores</Text>
 
-                        <HStack fontWeight={"bold"}>
-                            <Text>
-                                {artistDisplay}
-                            </Text>
 
-                            <Text>
-                                {playing && " - "}
-                            </Text>
-
-                            <Text>
-                                {songDisplay}
-                            </Text>
-
-                        </HStack>
-
-                        <Box overflowY="auto" maxHeight="320px" width={"100%"} display={"flex"}
-                             flexDirection={"column-reverse"}>
                             <Table variant="simple" size={"sm"}>
-                                <Tbody>
-                                    {chatMessages.map(({user, message, guessedCount}) => (
-                                        <Tr>
-                                            <Td>
-                                                <HStack color={"blue"} fontWeight={"bold"}>
-                                                    <Text color={"teal"}>
-                                                        {user}
-                                                    </Text>
-                                                    <Text>
-                                                        {":"}
-                                                    </Text>
-                                                    <Text color={guessedCount > 0 ? "orange" : "black"}>
-                                                        {message}
-                                                    </Text>
-                                                </HStack>
-                                            </Td>
-                                        </Tr>
-                                    ))}
-                                </Tbody>
+
+                                    <Tbody>
+                                        {scores.map(({score, username,}, index) => (
+                                            <Tr key={index}>
+                                                <Td>
+                                                    <HStack fontWeight={"bold"}>
+                                                        <Text color={"teal"}>
+                                                            {username}
+                                                        </Text>
+                                                        <Text>
+                                                            {":"}
+                                                        </Text>
+                                                        <Text>
+                                                            {score}
+                                                        </Text>
+                                                    </HStack>
+                                                </Td>
+                                            </Tr>
+                                        ))}
+                                    </Tbody>
+
                             </Table>
 
-                        </Box>
+                        </VStack>
 
-                        <Input
-                            type={"text"}
-                            onKeyPress={(ev) => {
-                                if (ev.key === "Enter") {
-                                    ev.preventDefault();
-                                    if (ev.target.value.length > 0) {
-                                        this.handleMessageSend(ev.target.value)
-                                        ev.target.value = ""
+                        <VStack maxHeight="90%" width={"50%"}>
+
+                            {!startButtonVisible && <HStack fontWeight={"bold"}>
+                                <Text>
+                                    {artistDisplay}
+                                </Text>
+
+                                <Text>
+                                    {" - "}
+                                </Text>
+
+                                <Text>
+                                    {songDisplay}
+                                </Text>
+
+                            </HStack>}
+
+                            <Box overflowY="auto" maxHeight="320px" width={"100%"} display={"flex"}
+                                 flexDirection={"column-reverse"}>
+                                <Table variant="simple" size={"sm"}>
+                                    <Tbody>
+                                        {chatMessages.map(({user, message, guessedCount}, index) => (
+                                            <Tr key={index}>
+                                                <Td>
+                                                    <HStack color={"blue"} fontWeight={"bold"}>
+                                                        <Text color={"teal"}>
+                                                            {user}
+                                                        </Text>
+                                                        <Text>
+                                                            {":"}
+                                                        </Text>
+                                                        <Text color={guessedCount > 0 ? "orange" : "black"}>
+                                                            {message}
+                                                        </Text>
+                                                    </HStack>
+                                                </Td>
+                                            </Tr>
+                                        ))}
+                                    </Tbody>
+                                </Table>
+
+                            </Box>
+
+                            <Input
+                                type={"text"}
+                                onKeyPress={(ev) => {
+                                    if (ev.key === "Enter") {
+                                        ev.preventDefault();
+                                        if (ev.target.value.length > 0) {
+                                            this.handleMessageSend(ev.target.value)
+                                            ev.target.value = ""
+                                        }
+
                                     }
+                                }}
+                            />
 
+
+                            <HStack width={"100%"}>
+                                <Input type='range' min={0} max={1} step='any' value={volume}
+                                       onChange={this.handleVolumeChange}
+                                       width={"20%"}/>
+                                {/*<button onClick={this.handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>*/}
+                                {
+                                    ready ?
+                                        <Button onClick={this.handleReadyChange}
+                                                colorScheme={"red"}>{'Unready'}</Button>
+                                        :
+                                        <Button onClick={this.handleReadyChange} colorScheme={"blue"}>{'Ready'}</Button>
                                 }
-                            }}
-                        />
 
 
-                        <HStack width={"100%"}>
-                            <Input type='range' min={0} max={1} step='any' value={volume}
-                                   onChange={this.handleVolumeChange}
-                                   width={"20%"}/>
-                            {/*<button onClick={this.handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>*/}
-                            {
-                                ready ?
-                                    <Button onClick={this.handleReadyChange} colorScheme={"red"}>{'Unready'}</Button>
-                                    :
-                                    <Button onClick={this.handleReadyChange} colorScheme={"blue"}>{'Ready'}</Button>
-                            }
+                                {startButtonVisible &&
+                                <Button onClick={this.prepareGame}>{'Start Game'}</Button>}
 
 
-                            {this.state.startButtonVisible &&
-                            <Button onClick={this.prepareGame}>{'Start Game'}</Button>}
+                                {startButtonVisible &&
+                                <Select width={"40%"} onChange={e => this.handlePlaylistChange(e)}>
+                                    {
+                                        playlistsForThisUser.map((playlist) => (
+                                            <option key={playlist.id} value={playlist.id}>{playlist.name}</option>
+                                        ))
+                                    }
+                                </Select>
+                                }
 
 
-                            {this.state.startButtonVisible &&
-                            <Select width={"40%"} onChange={e => this.handlePlaylistChange(e)}>
-                                {playlistsForThisUser.map((playlist) => (
-                                    <option key={playlist.id} value={playlist.id}>{playlist.name}</option>
-                                ))}
-                            </Select>
-                            }
+                            </HStack>
 
-
-                        </HStack>
-
-                        <Progress value={played * 100} width={"80%"}/>
-                    </VStack>
+                            {!startButtonVisible && <Progress value={played * 100} width={"80%"}/>}
+                            {!startButtonVisible && currentTimer !== null && <Progress value={100 - (currentTimer.getTimeLeft() / this.songLength) * 100} width={"80%"} colorScheme={"green"}/>}
+                        </VStack>
+                    </HStack>
                 </Center>
 
             </div>

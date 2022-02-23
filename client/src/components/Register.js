@@ -1,9 +1,8 @@
 import React, {Component} from "react";
 import axios from "axios";
 import {Navigate} from "react-router-dom";
-import NavBar from "./NavBar";
 import {auth} from "./useTokenClass";
-import {Button, Center, FormControl, FormLabel, Input} from "@chakra-ui/react";
+import {Box, Button, Flex, FormControl, FormLabel, Heading, Input, Link, Stack} from "@chakra-ui/react";
 
 class Register extends Component {
 
@@ -23,12 +22,12 @@ class Register extends Component {
             return
         }
 
-        axios.post('http://localhost:3000/register',
+        axios.post(process.env.REACT_APP_API_URL + "/register",
             {
                 "mail": mail,
                 "username": userName,
                 "password": password
-            })
+            }, {headers:  {'Content-Type': undefined} })
             .then(r => {
                 if (r.data.err) {
                     alert(r.data.err)
@@ -49,9 +48,20 @@ class Register extends Component {
         return (
 
 
-            <div>
-                <NavBar/>
-                <Center>
+            <Flex
+                minH={'100vh'}
+                align={'center'}
+                justify={'center'}
+                bg={'gray.50'}>
+                <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
+                    <Stack align={'center'}>
+                        <Heading fontSize={'4xl'}>Create an account</Heading>
+                    </Stack>
+                    <Box
+                        rounded={'lg'}
+                        bg={'white'}
+                        boxShadow={'lg'}
+                        p={8}>
                     <form onSubmit={this.handleSubmit}>
 
                         <FormControl isRequired>
@@ -91,11 +101,27 @@ class Register extends Component {
                             />
                         </FormControl>
 
-                        <Button type="submit" colorScheme='blue' margin={"5px 0"}>REGISTER</Button>
+                        <Stack spacing={10}>
+                            <Stack
+                                direction={{base: 'column', sm: 'row'}}
+                                align={'start'}
+                                justify={'space-between'}>
+                                <Link href={"/register"} color={'blue.400'}>Already registered?</Link>
+                            </Stack>
+                            <Button
+                                type={"submit"}
+                                bg={'blue.400'}
+                                color={'white'}
+                                _hover={{
+                                    bg: 'blue.500',
+                                }}>
+                                Sign up
+                            </Button>
+                        </Stack>
                     </form>
-
-                </Center>
-            </div>
+                    </Box>
+                </Stack>
+            </Flex>
         )
     }
 

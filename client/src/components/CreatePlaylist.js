@@ -3,7 +3,7 @@ import axios from "axios";
 import NavBar from "./NavBar";
 import {auth} from "./useTokenClass";
 import jwt from "jsonwebtoken"
-import {Button, Center, FormControl, FormLabel, Input, Text, Textarea} from "@chakra-ui/react";
+import {Button, Center, FormControl, FormLabel, Input, Link, Text, Textarea} from "@chakra-ui/react";
 
 
 class CreatePlaylist extends Component {
@@ -17,7 +17,6 @@ class CreatePlaylist extends Component {
         event.preventDefault();
         let {name, urls} = this.state;
         let decoded = jwt.decode(auth.token)
-        console.log(decoded)
 
         let splitUrls = urls.split("\n")
 
@@ -27,19 +26,18 @@ class CreatePlaylist extends Component {
             formattedUrls.push(url.trim())
         })
 
-        axios.post('http://localhost:3000/playlist',
+        axios.post(process.env.REACT_APP_API_URL + "/playlist",
             {
                 "playlistName":name,
                 "urls":formattedUrls,
                 "creatorId": decoded.id
-            })
+            },{headers:  {'Content-Type': undefined} } )
             .then(r => {
                 if(r.data.err){
                     alert(r.data.err)
                 }
                 else{
-                    console.log("Decoded", decoded)
-
+                    console.log("Created playlist successfully")
                 }
             })
     }
@@ -60,17 +58,19 @@ class CreatePlaylist extends Component {
                         />
                     </FormControl>
 
-                    <Text>Song urls separated by comma:
-                        <Textarea
+                    <Text>Song urls, one url per line:</Text>
+                   <Textarea
                                rows={15}
                                cols={50}
                                name={"urls"}
                                required={true}
                                onChange={(e) => this.setState({urls: e.target.value})}
                         />
-                    </Text>
+
                     <br/>
                     <Button type="submit" colorScheme='blue' margin={"5px 0"}>CREATE PLAYLIST</Button>
+                    <Link href={"http://www.williamsportwebdeveloper.com/FavBackUp.aspx"} isExternal={true}><Button> Use this to convert YT playlist to separate links</Button></Link>
+
                 </form>
                 </Center>
 

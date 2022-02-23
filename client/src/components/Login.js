@@ -1,14 +1,22 @@
-import React, {Component} from "react";
+import {
+    Flex,
+    Box,
+    FormControl,
+    FormLabel,
+    Input,
+    Stack,
+    Link,
+    Button,
+    Heading,
+} from '@chakra-ui/react';
 import axios from "axios";
-import NavBar from "./NavBar";
+import {auth} from "./useTokenClass";
+import React, {Component} from "react";
 import {Navigate} from "react-router-dom";
 
-import {auth} from "./useTokenClass";
-import {Button, Center, FormControl, FormLabel, Input} from "@chakra-ui/react";
-
+// https://chakra-templates.dev/forms/authentication
 
 class Login extends Component {
-
     state = {
         userName: null,
         password: null,
@@ -20,21 +28,20 @@ class Login extends Component {
 
         let {userName, password} = this.state;
 
-        axios.post('http://localhost:3000/login',
+        axios.post(process.env.REACT_APP_API_URL + "/login",
             {
-                "username":userName,
-                "password":password
-            })
+                "username": userName,
+                "password": password
+            }, {headers: {'Content-Type': undefined}})
             .then(r => {
-                if(r.data.err){
+                if (r.data.err) {
                     alert(r.data.err)
-                }
-                else{
+                } else {
 
                     let loginToken = r.data.token;
-                    console.log("Token", loginToken)
+                    //console.log("Token", loginToken)
                     auth.saveToken(loginToken)
-                    console.log("Auth token", auth.token)
+                    //console.log("Auth token", auth.token)
 
                     this.setState({redirect: true})
                 }
@@ -43,42 +50,70 @@ class Login extends Component {
 
     render() {
         const {redirect} = this.state;
-        if(redirect){
+        if (redirect) {
             return <Navigate to={"/choose-room"}/>
         }
-
         return (
+            <Flex
+                minH={'100vh'}
+                align={'center'}
+                justify={'center'}
+                bg={'gray.50'}>
+                <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
+                    <Stack align={'center'}>
+                        <Heading fontSize={'4xl'}>Sign in to your account</Heading>
+                    </Stack>
+                    <Box
+                        rounded={'lg'}
+                        bg={'white'}
+                        boxShadow={'lg'}
+                        p={8}>
+                        <form onSubmit={this.handleSubmit}>
+                        <Stack spacing={4}>
+                            <FormControl isRequired>
+                                <FormLabel htmlFor='userName'>User name</FormLabel>
+                                <Input type="text"
+                                       name={"userName"}
+                                       required={true}
+                                       autoComplete="on"
+                                       onChange={(e) => this.setState({userName: e.target.value})}
+                                />
 
-            <div>
-                <NavBar />
-
-                <Center>
-                <form onSubmit={this.handleSubmit}>
-                    <FormControl isRequired>
-                    <FormLabel htmlFor='userName'>User name</FormLabel>
-                        <Input type="text"
-                               name={"userName"}
-                               onChange={(e) => this.setState({userName: e.target.value})}
-                        />
-                    </FormControl>
-                    <FormControl isRequired>
-                    <FormLabel htmlFor='password'>Password</FormLabel>
-                        <Input type="password"
-                               name={"password"}
-                               required={true}
-                               onChange={(e) => this.setState({password: e.target.value})}
-                        />
-                    </FormControl>
-
-                    <Button type="submit" colorScheme='blue' margin={"5px 0"}>LOG IN</Button>
-                </form>
-
-                </Center>
-            </div>
-        )
+                            </FormControl>
+                            <FormControl isRequired>
+                                <FormLabel htmlFor='password'>Password</FormLabel>
+                                <Input type="password"
+                                       name={"password"}
+                                       required={true}
+                                       autoComplete="on"
+                                       onChange={(e) => this.setState({password: e.target.value})}
+                                />
+                            </FormControl>
+                            <Stack spacing={10}>
+                                <Stack
+                                    direction={{base: 'column', sm: 'row'}}
+                                    align={'start'}
+                                    justify={'space-between'}>
+                                    <Link href={"/register"} color={'blue.400'}>Don't have an account?</Link>
+                                </Stack>
+                                <Button
+                                    type={"submit"}
+                                    bg={'blue.400'}
+                                    color={'white'}
+                                    _hover={{
+                                        bg: 'blue.500',
+                                    }}>
+                                    Sign in
+                                </Button>
+                            </Stack>
+                        </Stack>
+                        </form>
+                    </Box>
+                </Stack>
+            </Flex>
+        );
     }
-
-
 }
 
-export default Login;
+export default Login
+

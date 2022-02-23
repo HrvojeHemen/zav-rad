@@ -13,7 +13,6 @@ class Logout extends Component {
 
     logout = function () {
         auth.deleteToken()
-        console.log("Logging out, token after", auth.token)
         this.setState({redirect: true})
     }.bind(this)
 

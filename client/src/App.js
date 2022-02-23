@@ -10,8 +10,10 @@ import Register from "./components/Register"
 import Logout from "./components/Logout"
 import Room from "./components/Room";
 import CreatePlaylist from "./components/CreatePlaylist";
-
+import Profile from "./components/Profile"
+import MyPlaylists from "./components/MyPlaylists"
 import {ChakraProvider} from '@chakra-ui/react'
+import EditPlaylist from "./components/EditPlaylist";
 
 
 let isLoggedIn = function () {
@@ -64,6 +66,19 @@ function App() {
                     <Route path='/create-playlist' element={<PrivateRoute/>}>
                         <Route path='/create-playlist' element={<CreatePlaylist/>}/>
                     </Route>
+
+                    <Route path='/profile' element={<PrivateRoute/>}>
+                        <Route path='/profile' element={<Profile/>}/>
+                    </Route>
+
+                    <Route path='/my-playlists' element={<PrivateRoute/>}>
+                        <Route path='/my-playlists' element={<MyPlaylists/>}/>
+                    </Route>
+
+                    <Route path='/edit-playlist/:id' element={<PrivateRoute/>}>
+                        <Route path='/edit-playlist/:id' element={<EditPlaylist/>}/>
+                    </Route>
+
 
 
                     {/*DEFAULT ROUTE*/}

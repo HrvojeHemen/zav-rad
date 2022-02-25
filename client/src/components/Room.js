@@ -20,9 +20,10 @@ import jwt from "jsonwebtoken";
 
 
 class Room extends Component {
-    amountOfSongs = 15;
+    amountOfSongs = 10;
     decoded = jwt.decode(auth.token)
     songLength = 15000;
+    afterSongHintLength = 2500;
     // 1 / allowedDistance, 5 -> 20% mistake allowed
     allowedDistance = 5
     fuzzball = require('fuzzball');
@@ -170,8 +171,31 @@ class Room extends Component {
 
 
     trackHandler = () => {
+        // let currentSong = this.state.queue[0];
+        // console.log(currentSong)
+        //
+        // this.setState({
+        //     chatMessages: [...this.state.chatMessages,
+        //         {
+        //             "user": "CORRECT SONG",
+        //             "message": currentSong['token1'] + " - " + currentSong['token2'],
+        //             "guessedCount": 0
+        //         }
+        //     ]
+        // }, () => {
+        //
+        // })
+
         this.state.queue.shift();
-        this.prepareNewTrack();
+        //this.displaySongTitleAfterTime(currentSong['token1'] + " - " + currentSong['token2']);
+        this.prepareNewTrack()
+
+    }
+
+    displaySongTitleAfterTime = () => {
+        this.setState({token1Correct:true,token2Correct:true,
+            currentTimer: new this.timer(this.prepareNewTrack, this.afterSongHintLength)}
+        )
     }
 
     prepareNewTrack = () => {
@@ -282,8 +306,8 @@ class Room extends Component {
         //     console.log(song.startTimestamp)
         // }
 
-        if(newSelectedPlaylist.length > this.amountOfSongs){
-            newSelectedPlaylist = newSelectedPlaylist.slice(0,this.amountOfSongs)
+        if(newSelectedPlaylist.songs.length > this.amountOfSongs){
+            newSelectedPlaylist.songs = newSelectedPlaylist.songs.slice(0,this.amountOfSongs)
         }
 
 
@@ -348,40 +372,51 @@ class Room extends Component {
 
     }.bind(this)
 
-
     handleMessageReceived = (args) => {
-        let {source, username, message, token1, token2, tokenBoth} = args;
-        console.log("Received message from", source, username, message)
-        console.log(token1, token2, tokenBoth)
-        // if (source === this.decoded.id) {
-        //     console.log("Ignoring message because I sent it")
-        //     return;
-        // }
+        try{
+            let {source, username, message, token1, token2, tokenBoth} = args;
+            console.log("Received message from", source, username, message)
+            console.log(token1, token2, tokenBoth)
+            // if (source === this.decoded.id) {
+            //     console.log("Ignoring message because I sent it")
+            //     return;
+            // }
 
-        let {queue} = this.state;
+            let {queue} = this.state;
 
-        let {token1Correct, token2Correct} = this.state;
+            let {token1Correct, token2Correct} = this.state;
 
-        let guessedCount = 0;
-        if ((token1 && !token1Correct) || (tokenBoth && !token1Correct)) {
-            guessedCount++;
-            this.setState({token1Correct: true, artistDisplay: queue[0]['token1']})
+            let guessedCount = 0;
+            if ((token1 && !token1Correct) || (tokenBoth && !token1Correct)) {
+                guessedCount++;
+                this.setState({token1Correct: true, artistDisplay: queue[0]['token1']})
+            }
+            if ((token2 && !token2Correct) || (tokenBoth && !token2Correct)) {
+                guessedCount++;
+                this.setState({token2Correct: true, songDisplay: queue[0]['token2']})
+            }
+
+
+            this.setState({
+                chatMessages: [...this.state.chatMessages,
+                    {
+                        "user": username,
+                        "message": message,
+                        "guessedCount": guessedCount
+                    }
+                ]
+            })
         }
-        if ((token2 && !token2Correct) || (tokenBoth && !token2Correct)) {
-            guessedCount++;
-            this.setState({token2Correct: true, songDisplay: queue[0]['token2']})
+        catch(err){
+            console.log("Error error")
+            console.log("~~~~~~~~~~~~~~~~")
+            console.log(err)
+            console.log("~~~~~~~~~~~~~~~~")
+            console.log(args)
+            console.log("~~~~~~~~~~~~~~~~")
         }
 
 
-        this.setState({
-            chatMessages: [...this.state.chatMessages,
-                {
-                    "user": username,
-                    "message": message,
-                    "guessedCount": guessedCount
-                }
-            ]
-        })
 
     }
 

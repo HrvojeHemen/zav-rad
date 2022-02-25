@@ -36,6 +36,7 @@ function chat(io) {
         }
 
         let updateScoresIfNeeded = function(data){
+            console.log(data)
             let {source, token1, token2, tokenBoth} = data;
 
             let addPoints = 0;
@@ -112,6 +113,7 @@ function chat(io) {
             leaveCurrentRoomIfInAny();
             console.log("Disconnected")
         })
+
 
 
         socket.on("joinRoom", function (data) {

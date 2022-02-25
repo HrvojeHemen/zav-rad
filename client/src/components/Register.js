@@ -106,7 +106,7 @@ class Register extends Component {
                                 direction={{base: 'column', sm: 'row'}}
                                 align={'start'}
                                 justify={'space-between'}>
-                                <Link href={"/register"} color={'blue.400'}>Already registered?</Link>
+                                <Link href={"/login"} color={'blue.400'}>Already registered?</Link>
                             </Stack>
                             <Button
                                 type={"submit"}

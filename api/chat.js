@@ -3,6 +3,8 @@
 //   asd: { users: { '0': {score: xx}}, '1': {score: xx} } },
 //   bsd: { users: { '1': {score: xx} } }
 // }
+const SONG_LENGTH = 1000;
+const TITLE_LENGTH = 500;
 
 let rooms = {}
 let cur = 0
@@ -35,7 +37,19 @@ function chat(io) {
 
         }
 
+        let resetScores = function(){
+            let currentRoom = socket['currentRoom']
+            if(rooms[currentRoom] !== undefined){
+                for (const us in rooms[currentRoom]["users"]) {
+                    rooms[currentRoom]["users"][us]['score'] = 0
+                }
+            }
+        }
+
         let updateScoresIfNeeded = function(data){
+            let currentRoom = socket['currentRoom']
+            if(rooms[currentRoom]['allowedToGuess']) return
+
             console.log(data)
             let {source, token1, token2, tokenBoth} = data;
 
@@ -55,7 +69,7 @@ function chat(io) {
             }
 
             if(addPoints > 0){
-                let currentRoom = socket['currentRoom']
+
                 let userId = socket['userId']
                 rooms[currentRoom]["users"][userId]['score'] += addPoints
                 console.log("Points changed")
@@ -106,31 +120,26 @@ function chat(io) {
         })
 
         socket.on("startGameServerHost", async function (data){
-
+            resetScores();
             let {queue} = data;
+            let songs = queue.songs
             let room = socket['currentRoom'];
             if(room !== undefined){
-                console.log("Starting queue: " + queue)
 
-                while (queue.length > 0 && room in rooms){
-                    let song = queue.pop();
+                while (songs.length > 0 && room in rooms){
+                    let song = songs.pop();
 
+                    //play song, allow guessing and wait X seconds
                     io.to(socket['currentRoom']).emit("playSong", song);
+                    socket['currentRoom']['allowedToGuess'] = true;
+                    await new Promise(r => setTimeout(r,SONG_LENGTH));
 
-
-                    //wait 5 sec
-                    await new Promise(r => setTimeout(r,5000));
-
+                    //show title, disable guessing and wait Y seconds
                     io.to(socket['currentRoom']).emit("showTitle", song);
-
-
-
-                    //wait 2 sec
-                    await new Promise(r => setTimeout(r,2000));
-
+                    socket['currentRoom']['allowedToGuess'] = false;
+                    await new Promise(r => setTimeout(r,TITLE_LENGTH));
                 }
-
-                io.to(socket['currentRoom']).emit("quizDone");
+                io.to(room).emit("quizDone");
             }
 
         })
@@ -149,7 +158,7 @@ function chat(io) {
         })
 
 
-
+        //TODO SHVATIT ZAS USER NE NAPUSTI SOBU
         socket.on("joinRoom", function (data) {
             let {roomName, userId, username} = data;
             // console.log(`User with id "${userId}" joined room "${roomName}"`)

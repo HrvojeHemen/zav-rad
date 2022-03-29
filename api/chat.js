@@ -100,8 +100,42 @@ function chat(io) {
 
         socket.on("startGame", function (data) {
             console.log("Starting game")
+            console.log("With Data")
+            console.log(data)
             io.to(socket['currentRoom']).emit("startGame", data)
         })
+
+        socket.on("startGameServerHost", async function (data){
+
+            let {queue} = data;
+            let room = socket['currentRoom'];
+            if(room !== undefined){
+                console.log("Starting queue: " + queue)
+
+                while (queue.length > 0 && room in rooms){
+                    let song = queue.pop();
+
+                    io.to(socket['currentRoom']).emit("playSong", song);
+
+
+                    //wait 5 sec
+                    await new Promise(r => setTimeout(r,5000));
+
+                    io.to(socket['currentRoom']).emit("showTitle", song);
+
+
+
+                    //wait 2 sec
+                    await new Promise(r => setTimeout(r,2000));
+
+                }
+
+                io.to(socket['currentRoom']).emit("quizDone");
+            }
+
+        })
+
+
         socket.on("chatMessage", function (data) {
             console.log("Emitting chat message to the game room")
             console.log(data)

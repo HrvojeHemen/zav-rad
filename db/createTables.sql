@@ -7,6 +7,12 @@ DROP SEQUENCE IF EXISTS playlists_SEQ CASCADE;
 DROP TABLE IF EXISTS songs CASCADE;
 DROP SEQUENCE IF EXISTS songs_SEQ CASCADE;
 
+DROP TABLE IF EXISTS subscriptions CASCADE;
+DROP SEQUENCE IF EXISTS subscriptions_SEQ CASCADE;
+
+DROP TABLE IF EXISTS scores CASCADE;
+DROP SEQUENCE IF EXISTS scores_SEQ CASCADE;
+
 CREATE SEQUENCE users_SEQ INCREMENT BY 1 MINVALUE 0;
 CREATE TABLE users
 (
@@ -39,5 +45,23 @@ CREATE TABLE songs
     token2      VARCHAR(128) not null,
 
     CONSTRAINT songs_pk PRIMARY KEY (id)
+);
+
+
+CREATE SEQUENCE subscriptions_SEQ INCREMENT BY 1 MINVALUE 0;
+CREATE TABLE subscriptions
+(
+  id int not null DEFAULT nextval('subscriptions_SEQ'),
+  playlist_id int not null references playlists(id) on delete cascade,
+  user_id int not null references users(id) on delete cascade
+);
+
+CREATE SEQUENCE scores_SEQ INCREMENT BY 1 MINVALUE 0;
+CREATE TABLE scores
+(
+    id int not null DEFAULT nextval('subscriptions_SEQ'),
+    playlist_id int not null references playlists(id) on delete cascade,
+    user_id int not null references users(id) on delete cascade,
+    score int not null
 );
 

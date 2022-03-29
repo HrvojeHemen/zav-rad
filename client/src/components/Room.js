@@ -22,7 +22,7 @@ import jwt from "jsonwebtoken";
 class Room extends Component {
     amountOfSongs = 10;
     decoded = jwt.decode(auth.token)
-    songLength = 15000;
+    songLength = 1000;
     afterSongHintLength = 2500;
     // 1 / allowedDistance, 5 -> 20% mistake allowed
     allowedDistance = 5
@@ -56,19 +56,25 @@ class Room extends Component {
         }.bind(this))
             //when one in room starts the game others start it aswell
             .on("startGame", function (data) {
+                console.log("NSP AA")
+                console.log(data)
                 let source = data['source']
                 let queue = data['queue']
                 //console.log("Data received:", data)
                 //console.log("this.decoded in socket", this.decoded)
-                if (source === this.decoded.id) {
-                    console.log("Start from same source, ignoring it")
-                    return
-                }
+                // if (source === this.decoded.id) {
+                //     console.log("Start from same source, ignoring it")
+                //     return
+                // }
                 //console.log(this.state)
                 //console.log("Start variable in socket req reciever: ", this.state.started)
                 if (!this.state.started) {
-
-                    this.setState({queue: [...queue], startButtonVisible: false, started: true}
+                    console.log("NSP POCINJEM")
+                    this.setState({
+                            queue: [...queue.songs],
+                            startButtonVisible: false,
+                            started: true
+                        }
                         , () => {
                             this.startGame();
                         })
@@ -199,6 +205,7 @@ class Room extends Component {
     }
 
     prepareNewTrack = () => {
+        console.log("### PREP")
         console.log("Preparing new track")
         if (this.state.queue.length > 0) {
             console.log("Playing")
@@ -239,7 +246,7 @@ class Room extends Component {
             console.log("No more songs")
             this.setState({
                 startButtonVisible: true, started: false, played: 0, artistDisplay: "",
-                songDisplay: ""
+                songDisplay: "", currentTimer: null
             })
         }
 
@@ -287,6 +294,8 @@ class Room extends Component {
         let newSelectedPlaylist = selectedPlaylist === undefined ?
             playlistsForThisUser[0] : selectedPlaylist;
 
+        console.log("NSP", newSelectedPlaylist)
+
         //console.log("NSP after", newSelectedPlaylist)
 
         if (newSelectedPlaylist === undefined) {
@@ -306,27 +315,41 @@ class Room extends Component {
         //     console.log(song.startTimestamp)
         // }
 
-        if(newSelectedPlaylist.songs.length > this.amountOfSongs){
-            newSelectedPlaylist.songs = newSelectedPlaylist.songs.slice(0,this.amountOfSongs)
+        let firstX = {
+            creator_id: newSelectedPlaylist.creator_id,
+            id : newSelectedPlaylist.id,
+            name: newSelectedPlaylist.name,
+            songs: []
         }
 
-
-        this.setState({
-                queue: [...newSelectedPlaylist.songs],
-                startButtonVisible: false,
-                started: true,
-                selectedPlaylist: newSelectedPlaylist
-            }
-            , () => {
-                //console.log("State of this.started after changing in StartGame", this.state.started)
-                //console.log("Queue before preparing new track", this.state.queue)
-                //console.log("Current selected playlist", this.state.selectedPlaylist)
+        for(let i = 0; i < Math.min(newSelectedPlaylist.songs.length, this.amountOfSongs); i++){
+            firstX.songs.push(newSelectedPlaylist.songs[i]);
+        }
+        // if(newSelectedPlaylist.songs.length > this.amountOfSongs){
+        //     firstX.songs = newSelectedPlaylist.songs.slice(0, this.amountOfSongs)
+        // }
+        // else{
+        //     firstX.songs = newSelectedPlaylist.songs.slice(0, newSelectedPlaylist.songs.length)
+        // }
 
 
-                this.startGame();
+        // console.log("NSPAFTER", newSelectedPlaylist)
+        //
+        // this.setState({
+        //     queue = [...firstX.songs],
+        //         startButtonVisible: false,
+        //         started: true,
+        //         selectedPlaylist: firstX
+        //     }
+        //     , () => {
+        //         this.startGame();
+        //
+        //         socket.emit("startGame", {"source": this.decoded.id, "queue": firstX})
+        //     })
 
-                socket.emit("startGame", {"source": this.decoded.id, "queue": this.state.queue})
-            })
+        socket.emit("startGame",
+            {"source": this.decoded.id, "queue": firstX}
+        )
 
     }
 

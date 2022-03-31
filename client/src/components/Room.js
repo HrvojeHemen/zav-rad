@@ -7,6 +7,7 @@ import {
     Box, Button, Center, HStack, Input, Progress, Select, Table, Tbody, Td, Text, Tr, VStack
 } from '@chakra-ui/react'
 import jwt from "jsonwebtoken";
+import {CheckIcon, CloseIcon} from "@chakra-ui/icons";
 
 
 class Room extends Component {
@@ -31,29 +32,31 @@ class Room extends Component {
                 console.log("Error in api fetch", error)
             })
 
-                socket.on("chatMessage", function (data) {
-                    this.handleMessageReceived(data);
-                }.bind(this))
+        socket.off()
+        socket
+            .on("chatMessage", function (data) {
+                this.handleMessageReceived(data);
+            }.bind(this))
 
-                .on("scoreBoardUpdate", function (data) {
-                    this.handleScoreBoardUpdate(data);
-                }.bind(this))
+            .on("scoreBoardUpdate", function (data) {
+                this.handleScoreBoardUpdate(data);
+            }.bind(this))
 
-                .on("playSong", function (data) {
-                    this.handlePlayFromServer(data)
-                }.bind(this))
+            .on("playSong", function (data) {
+                this.handlePlayFromServer(data)
+            }.bind(this))
 
-                .on("showTitle", function (data) {
-                    this.showTitle(data)
-                }.bind(this))
+            .on("showTitle", function (data) {
+                this.showTitle(data)
+            }.bind(this))
 
-                .on("quizDone", function () {
-                    this.quizDone()
-                }.bind(this))
+            .on("quizDone", function () {
+                this.quizDone()
+            }.bind(this))
 
     }
 
-    quizDone = function(){
+    quizDone = function () {
         this.setState({
             startButtonVisible: true, started: false, played: 0, artistDisplay: "",
             songDisplay: "", currentTimer: null, queue: []
@@ -64,8 +67,6 @@ class Room extends Component {
         let token1 = song['token1']
         let token2 = song['token2']
 
-
-        console.log(song)
 
         let blankTitleName = ""
         let blankArtistName = ""
@@ -106,9 +107,9 @@ class Room extends Component {
                 "score": score, "username": username
             })
         }
-        console.log(newScores)
+        // console.log(newScores)
         this.setState({scores: data}, () => {
-            console.log("Received score update", newScores)
+            // console.log("Received score update", newScores)
         })
     }
 
@@ -151,7 +152,15 @@ class Room extends Component {
     }
 
     handleReadyChange = () => {
-        this.setState({ready: !this.state.ready})
+        this.setState({ready: !this.state.ready}, () => {
+            console.log("Emmiting ready", this.state.ready)
+            socket.emit("changeReady",
+                {
+                    "userId": this.decoded.id,
+                    "ready": this.state.ready
+                }
+            )
+        })
     }
 
 
@@ -164,7 +173,6 @@ class Room extends Component {
             songDisplay: token2
         })
     }
-
 
 
     handleSkipToRandomPart = () => {
@@ -201,7 +209,7 @@ class Room extends Component {
 
         let newSelectedPlaylist = selectedPlaylist === undefined ? playlistsForThisUser[0] : selectedPlaylist;
 
-        console.log("NSP", newSelectedPlaylist)
+        // console.log("NSP", newSelectedPlaylist)
 
 
         if (newSelectedPlaylist === undefined) {
@@ -230,7 +238,7 @@ class Room extends Component {
             cnt++
         }
 
-        newSelectedPlaylist.songs = newSelectedPlaylist.songs.slice(Math.max(newSelectedPlaylist.songs.length-1, cnt+1),newSelectedPlaylist.songs.length)
+        //newSelectedPlaylist.songs = newSelectedPlaylist.songs.slice(Math.max(newSelectedPlaylist.songs.length - 1, cnt + 1), newSelectedPlaylist.songs.length)
 
 
         // firstX.songs.forEach(s => console.log(s))
@@ -238,11 +246,6 @@ class Room extends Component {
         socket.emit("startGameServerHost", {
             "source": this.decoded.id, "queue": firstX
         })
-    }
-
-
-    startGame = () => {
-        this.prepareNewTrack();
     }
 
     handleMessageSend = function (message) {
@@ -267,6 +270,8 @@ class Room extends Component {
     }.bind(this)
 
     checkToken = function (expected, message) {
+        expected = expected.toString().toLowerCase()
+        message = message.toString().toLowerCase()
         if (expected === undefined || message === undefined || expected === "undefined undefined") {
             return false
         }
@@ -278,8 +283,8 @@ class Room extends Component {
         let diff = this.fuzzball.token_set_ratio(expected, message)
         let noWhiteSpaceDiff = this.fuzzball.token_set_ratio(noWhiteSpaceExpected, noWhiteSpaceMessage)
         let res = (diff > 80 || noWhiteSpaceDiff > 80) && Math.abs(expected.length - message.length) < 5
-        console.log(noWhiteSpaceExpected, " | ", noWhiteSpaceMessage)
-        console.log(expected, " | ", message, res, diff, noWhiteSpaceDiff)
+        // console.log(noWhiteSpaceExpected, " | ", noWhiteSpaceMessage)
+        // console.log(expected, " | ", message, res, diff, noWhiteSpaceDiff)
         return res
 
     }.bind(this)
@@ -287,8 +292,8 @@ class Room extends Component {
     handleMessageReceived = (args) => {
         try {
             let {source, username, message, token1, token2, tokenBoth} = args;
-            console.log("Received message from", source, username, message)
-            console.log(token1, token2, tokenBoth)
+            // console.log("Received message from", source, username, message)
+            // console.log(token1, token2, tokenBoth)
             // if (source === this.decoded.id) {
             //     console.log("Ignoring message because I sent it")
             //     return;
@@ -403,9 +408,12 @@ class Room extends Component {
                         <Table variant="simple" size={"sm"}>
 
                             <Tbody>
-                                {scores.map(({score, username,}, index) => (<Tr key={index}>
+                                {scores.map(({score, username, ready,}, index) => (<Tr key={index}>
                                     <Td>
                                         <HStack fontWeight={"bold"}>
+                                            {ready ? <CheckIcon/> : <CloseIcon/>}
+
+
                                             <Text color={"teal"}>
                                                 {username}
                                             </Text>
@@ -488,9 +496,12 @@ class Room extends Component {
                                    onChange={this.handleVolumeChange}
                                    width={"20%"}/>
                             {/*<button onClick={this.handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>*/}
-                            {ready ? <Button onClick={this.handleReadyChange}
+                            {startButtonVisible ?
+                                ready ? <Button onClick={this.handleReadyChange}
                                              colorScheme={"red"}>{'Unready'}</Button> :
-                                <Button onClick={this.handleReadyChange} colorScheme={"blue"}>{'Ready'}</Button>}
+                                <Button onClick={this.handleReadyChange} colorScheme={"blue"}>{'Ready'}</Button>
+                            : ""
+                            }
 
 
                             {startButtonVisible && <Button onClick={this.prepareGame}>{'Start Game'}</Button>}

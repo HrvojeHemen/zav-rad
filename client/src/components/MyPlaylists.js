@@ -11,7 +11,8 @@ class MyPlaylists extends Component {
 
     state = {
         playlists: [],
-        redirectToPlaylistWithId: undefined
+        redirectToPlaylistWithId: undefined,
+        redirectToCreatePlaylist: false
     }
 
     componentDidMount() {
@@ -30,20 +31,27 @@ class MyPlaylists extends Component {
 
     }
 
-    setRedirectPlaylistId = function(id){
+    redirectToCreate = () => {
+        this.setState({redirectToCreatePlaylist:true})
+    }
+
+    setRedirectPlaylistId = function (id) {
         console.log("Idem na id", id)
-        this.setState({redirectToPlaylistWithId:id})
+        this.setState({redirectToPlaylistWithId: id})
     }.bind(this)
 
 
     render() {
 
-        let {playlists, redirectToPlaylistWithId} = this.state;
+        let {playlists, redirectToPlaylistWithId,  redirectToCreatePlaylist} = this.state;
 
         console.log(playlists)
 
         if (redirectToPlaylistWithId !== undefined) {
             return <Navigate to={"/edit-playlist/" + redirectToPlaylistWithId}/>
+        }
+        if (redirectToCreatePlaylist) {
+            return <Navigate to={"/create-playlist"}/>
         }
         return (
             <div>
@@ -51,6 +59,7 @@ class MyPlaylists extends Component {
 
                 <Center>
                     <VStack>
+                        <Button onClick={this.redirectToCreate} colorScheme={'blue'}> CREATE A PLAYLIST </Button>
 
                         <Text>Click on a playlist to edit it</Text>
                         <Table variant="simple" size={"sm"}>

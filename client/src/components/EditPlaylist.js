@@ -1,5 +1,29 @@
 import React, {useEffect, useState} from "react";
-import {Center, IconButton, Input, Table, TableCaption, Tbody, Td, Text, Th, Thead, Tr, VStack} from "@chakra-ui/react";
+import {
+    Button,
+    ButtonGroup,
+    Center,
+    IconButton,
+    Input,
+    Popover,
+    PopoverArrow,
+    PopoverBody,
+    PopoverCloseButton,
+    PopoverContent,
+    PopoverFooter,
+    PopoverHeader,
+    PopoverTrigger,
+    Table,
+    TableCaption,
+    Tbody,
+    Td,
+    Text,
+    Th,
+    Thead,
+    Tr,
+    VStack
+} from "@chakra-ui/react";
+import {Navigate} from "react-router-dom";
 import {useParams} from "react-router-dom";
 import jwt from "jsonwebtoken";
 import {auth} from "./useTokenClass";
@@ -15,6 +39,8 @@ const EditPlaylist = () => {
     const [owner, setOwner] = useState(undefined)
     const [songs, setSongs] = useState([])
     const [valid, setValid] = useState(true)
+
+    const [redirect, setRedirect] = useState(false);
 
     const {id} = useParams();
 
@@ -126,62 +152,98 @@ const EditPlaylist = () => {
         }
     }
 
-    return <div>
-        <NavBar/>
-        <Center>
-            <VStack width={"100%"}>
-                <Table variant="simple" size={"sm"} fontSize='sm'>
-                    <TableCaption>Edit songs as needed</TableCaption>
-                    <Thead>
-                        <Tr>
-                            <Th>Url</Th>
-                            <Th>Artist name</Th>
-                            <Th>Song name</Th>
-                        </Tr>
-                    </Thead>
-                    <Tbody>
-                        {songs.map(({id, url, token1, token2}) => (
-                            <Tr key={id}>
-                                <Td>
-                                    <Input type={'text'}
-                                           defaultValue={url}
-                                           onChange={(e) => handleUrlChange(e.target.value, id)}
-                                    />
-                                </Td>
-                                <Td>
-                                    <Input type={'text'} defaultValue={token1}
-                                           onChange={(e) => handleToken1Change(e.target.value, id)}/>
-                                </Td>
-                                <Td>
-                                    <Input type={'text'} defaultValue={token2}
-                                           onChange={(e) => handleToken2Change(e.target.value, id)}/>
-                                </Td>
+    const deletePlaylist = () => {
+        console.log("DELETEAM")
+        axios.post(process.env.REACT_APP_API_URL + "/playlist/delete/" + decoded.id + "/" + id)
+            .then(() => {
+                console.log("NAVIGIRAM")
+                setRedirect(true)
 
-                                <Td>
-                                    <IconButton
-                                        colorScheme={'green'}
-                                        icon={<CheckIcon/>}
-                                        aria-label={'Save-Item'}
-                                        onClick={() => {
-                                            updateSong(id)
-                                        }}
-                                    />
-                                    <IconButton
-                                        colorScheme={'red'}
-                                        icon={<DeleteIcon/>}
-                                        aria-label={'Delete-Item'}
-                                        onClick={() => {
-                                            deleteSong(id)
-                                        }}
-                                    />
-                                </Td>
+            })
+    }
+
+    if (redirect) return <Navigate to={'/my-playlists'}/>
+    else
+        return <div>
+            <NavBar/>
+            <Center>
+                <VStack width={"100%"}>
+                    <Table variant="simple" size={"sm"} fontSize='sm'>
+                        <TableCaption>Edit the songs as needed</TableCaption>
+                        <Thead>
+                            <Tr>
+                                <Th>Url</Th>
+                                <Th>Artist name</Th>
+                                <Th>Song name</Th>
                             </Tr>
-                        ))}
-                    </Tbody>
-                </Table>
-            </VStack>
-        </Center>
-    </div>
+                        </Thead>
+                        <Tbody>
+                            {songs.map(({id, url, token1, token2}) => (
+                                <Tr key={id}>
+                                    <Td>
+                                        <Input type={'text'}
+                                               defaultValue={url}
+                                               onChange={(e) => handleUrlChange(e.target.value, id)}
+                                        />
+                                    </Td>
+                                    <Td>
+                                        <Input type={'text'} defaultValue={token1}
+                                               onChange={(e) => handleToken1Change(e.target.value, id)}/>
+                                    </Td>
+                                    <Td>
+                                        <Input type={'text'} defaultValue={token2}
+                                               onChange={(e) => handleToken2Change(e.target.value, id)}/>
+                                    </Td>
+
+                                    <Td>
+                                        <IconButton
+                                            colorScheme={'green'}
+                                            icon={<CheckIcon/>}
+                                            aria-label={'Save-Item'}
+                                            onClick={() => {
+                                                updateSong(id)
+                                            }}
+                                        />
+                                        <IconButton
+                                            colorScheme={'red'}
+                                            icon={<DeleteIcon/>}
+                                            aria-label={'Delete-Item'}
+                                            onClick={() => {
+                                                deleteSong(id)
+                                            }}
+                                        />
+                                    </Td>
+                                </Tr>
+                            ))}
+                        </Tbody>
+                    </Table>
+
+
+                    <Popover
+                        returnFocusOnClose={false}
+                        placement='right'
+                        closeOnBlur={false}
+                    >
+                        <PopoverTrigger>
+                            <Button colorScheme={'red'}>Delete this playlist</Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <PopoverHeader fontWeight='semibold'>Confirmation</PopoverHeader>
+                            <PopoverArrow/>
+                            <PopoverCloseButton/>
+                            <PopoverBody>
+                                Are you sure you want to delete this playlist?
+                            </PopoverBody>
+                            <PopoverFooter d='flex' justifyContent='flex-end'>
+                                <ButtonGroup size='sm'>
+                                    <Button colorScheme='red' onClick={deletePlaylist}>Confirm</Button>
+                                </ButtonGroup>
+                            </PopoverFooter>
+                        </PopoverContent>
+                    </Popover>
+                </VStack>
+            </Center>
+        </div>
 
 }
 

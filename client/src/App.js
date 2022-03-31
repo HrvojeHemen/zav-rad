@@ -14,6 +14,7 @@ import Profile from "./components/Profile"
 import MyPlaylists from "./components/MyPlaylists"
 import {ChakraProvider} from '@chakra-ui/react'
 import EditPlaylist from "./components/EditPlaylist";
+import PlaylistViewer from "./components/PlaylistViewer";
 
 
 let isLoggedIn = function () {
@@ -79,6 +80,9 @@ function App() {
                         <Route path='/edit-playlist/:id' element={<EditPlaylist/>}/>
                     </Route>
 
+                    <Route path='/playlist/:id' element={<PrivateRoute/>}>
+                        <Route path='/playlist/:id' element={<PlaylistViewer/>}/>
+                    </Route>
 
 
                     {/*DEFAULT ROUTE*/}

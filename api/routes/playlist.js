@@ -84,11 +84,33 @@ router.get('/user/:id', async function (req, res, next) {
     res.json(playLists);
 })
 
+router.get('/subscriptions/:id', async function (req, res, next) {
+    let {id} = req.params;
+
+    let playLists = await getAllSubscriptionsForUser(id);
+    console.log(playLists)
+    for (let playlist of playLists) {
+
+        playlist['songs'] = await getSongsFromPlaylist(playlist.id);
+        //console.log(playlist)
+    }
+    res.json(playLists);
+})
+
+
+
 
 getAllPlaylistsForUser = async function (user_id) {
     let res = await db.query(`SELECT *
                               from playlists
                               where creator_id = '${user_id}'`);
+    return res.rows;
+}
+
+getAllSubscriptionsForUser = async function (user_id) {
+    let res = await db.query(`SELECT *
+                              from subscriptions join playlists p on p.id = subscriptions.playlist_id
+                              where user_id = '${user_id}'`);
     return res.rows;
 }
 

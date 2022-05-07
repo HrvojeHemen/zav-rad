@@ -3,35 +3,35 @@ import ReactPlayer from "react-player";
 import NavBar from "./NavBar";
 import {socket} from "./socket";
 import {auth} from "./useTokenClass";
+import {Navigate} from "react-router-dom";
 import {
     Box, Button, Center, HStack, Input, Progress, Select, Table, Tbody, Td, Text, Tr, VStack
 } from '@chakra-ui/react'
 import jwt from "jsonwebtoken";
 import {CheckIcon, CloseIcon} from "@chakra-ui/icons";
 
+import readySound from "../sounds/readySound.wav";
+import messageSound from "../sounds/messageSound.wav";
+
 
 class Room extends Component {
     amountOfSongs = 10;
     decoded = jwt.decode(auth.token)
     songLength = 15000;
-    afterSongHintLength = 2500;
-    // 1 / allowedDistance, 5 -> 20% mistake allowed
     allowedDistance = 5
     fuzzball = require('fuzzball');
 
 
-    componentDidMount() {
-        //console.log("Mounted")
-        //console.log(this.decoded)
-        fetch(process.env.REACT_APP_API_URL + "/playlist/user/" + this.decoded.id)
-            .then(res => res.json())
-            .then((result) => {
-                //console.log("Playliste: ", result)
-                this.setState({playlistsForThisUser: result})
-            }, (error) => {
-                console.log("Error in api fetch", error)
-            })
+    readyAudio = undefined
+    messageAudio = undefined
 
+
+    componentWillUnmount() {
+        console.log("Unmounted")
+        socket.emit("leaveRoom")
+    }
+
+    componentDidMount() {
         socket.off()
         socket
             .on("chatMessage", function (data) {
@@ -53,6 +53,53 @@ class Room extends Component {
             .on("quizDone", function () {
                 this.quizDone()
             }.bind(this))
+            .on("checkRoom", function (data) {
+                console.log("Room name", data)
+
+
+                //not in any socket room
+                if (data === null || data === undefined) {
+                    //check if query params have a roomName id to join that room if possible
+                    let queryParams = new URLSearchParams(window.location.search);
+                    let roomName = queryParams.get("roomName")
+
+                    //if no params, redirect to /, otherwise join that room
+                    if (roomName === null) {
+                        this.setState({navigateToChooseRoom: true})
+                    }
+
+                    socket.emit("joinRoom", {
+                        "roomName": roomName,
+                        "userId": this.decoded.id,
+                        "username": this.decoded.username
+                    })
+
+                }
+            }.bind(this))
+            .emit("checkRoom")
+
+        this.readyAudio = this.makeAudio(readySound)
+        this.messageAudio = this.makeAudio(messageSound)
+        //console.log("Mounted")
+        //console.log(this.decoded)
+        fetch(process.env.REACT_APP_API_URL + "/playlist/user/" + this.decoded.id)
+            .then(res => res.json())
+            .then((result) => {
+                //console.log("Playliste: ", result)
+                this.setState({playlistsForThisUser: result})
+            }, (error) => {
+                console.log("Error in api fetch", error)
+            })
+
+        fetch(process.env.REACT_APP_API_URL + "/playlist/subscriptions/" + this.decoded.id)
+            .then(res => res.json())
+            .then((result) => {
+                //console.log("Playliste: ", result)
+                this.setState({playlistsForThisUser: [...this.state.playlistsForThisUser, ...result]})
+            }, (error) => {
+                console.log("Error in api fetch", error)
+            })
+
 
     }
 
@@ -61,6 +108,19 @@ class Room extends Component {
             startButtonVisible: true, started: false, played: 0, artistDisplay: "",
             songDisplay: "", currentTimer: null, queue: []
         })
+    }
+
+    makeAudio = function (sound) {
+        let audio = new Audio(sound)
+        audio.volume = 0.04;
+        return audio
+    }
+
+    playAudio(audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.play()
+
     }
 
     handlePlayFromServer = function (song) {
@@ -132,7 +192,11 @@ class Room extends Component {
         token2Correct: false,
         artistDisplay: "",
         songDisplay: "",
-        scores: []
+        scores: [],
+
+        navigateToChooseRoom: false
+
+
     }
 
 
@@ -152,6 +216,7 @@ class Room extends Component {
     }
 
     handleReadyChange = () => {
+        this.playAudio(this.readyAudio)
         this.setState({ready: !this.state.ready}, () => {
             console.log("Emmiting ready", this.state.ready)
             socket.emit("changeReady",
@@ -209,12 +274,10 @@ class Room extends Component {
 
         let newSelectedPlaylist = selectedPlaylist === undefined ? playlistsForThisUser[0] : selectedPlaylist;
 
-        // console.log("NSP", newSelectedPlaylist)
-
-
         if (newSelectedPlaylist === undefined) {
             return
         }
+
         for (let song of newSelectedPlaylist.songs) {
             song["startTimestamp"] = Math.random() * 0.7
         }
@@ -231,17 +294,9 @@ class Room extends Component {
             songs: []
         }
 
-
-        let cnt = 0;
         for (let i = 0; i < Math.min(newSelectedPlaylist.songs.length, this.amountOfSongs); i++) {
             firstX.songs.push(newSelectedPlaylist.songs[i]);
-            cnt++
         }
-
-        //newSelectedPlaylist.songs = newSelectedPlaylist.songs.slice(Math.max(newSelectedPlaylist.songs.length - 1, cnt + 1), newSelectedPlaylist.songs.length)
-
-
-        // firstX.songs.forEach(s => console.log(s))
 
         socket.emit("startGameServerHost", {
             "source": this.decoded.id, "queue": firstX
@@ -255,7 +310,6 @@ class Room extends Component {
             var {token1, token2} = song
         }
 
-
         socket.emit("chatMessage", {
 
             "source": this.decoded.id,
@@ -263,22 +317,24 @@ class Room extends Component {
             "message": message,
 
             //we && with token1c and token2c so that only first guess is valid
-            "token1": this.checkToken(token1, message) && !token1Correct,
-            "token2": this.checkToken(token2, message) && !token2Correct,
-            "tokenBoth": this.checkToken(token1 + " " + token2, message) && !token1Correct && !token2Correct
+            "token1": !token1Correct && this.checkToken(token1, message),
+            "token2": !token2Correct && this.checkToken(token2, message),
+            "tokenBoth": !token1Correct && !token2Correct && this.checkToken(token1 + " " + token2, message)
         })
+
     }.bind(this)
 
     checkToken = function (expected, message) {
-        expected = expected.toString().toLowerCase()
-        message = message.toString().toLowerCase()
+
         if (expected === undefined || message === undefined || expected === "undefined undefined") {
             return false
         }
 
+        expected = expected.toString().toLowerCase()
+        message = message.toString().toLowerCase()
+
         let noWhiteSpaceExpected = expected.replace(/\s+/g, '')
         let noWhiteSpaceMessage = message.replace(/\s+/g, '')
-
 
         let diff = this.fuzzball.token_set_ratio(expected, message)
         let noWhiteSpaceDiff = this.fuzzball.token_set_ratio(noWhiteSpaceExpected, noWhiteSpaceMessage)
@@ -290,8 +346,9 @@ class Room extends Component {
     }.bind(this)
 
     handleMessageReceived = (args) => {
+        this.playAudio(this.messageAudio)
         try {
-            let {source, username, message, token1, token2, tokenBoth} = args;
+            let {username, message, token1, token2, tokenBoth, chatColor} = args;
             // console.log("Received message from", source, username, message)
             // console.log(token1, token2, tokenBoth)
             // if (source === this.decoded.id) {
@@ -316,7 +373,7 @@ class Room extends Component {
 
             this.setState({
                 chatMessages: [...this.state.chatMessages, {
-                    "user": username, "message": message, "guessedCount": guessedCount
+                    "user": username, "message": message, "guessedCount": guessedCount, "chatColor": chatColor
                 }]
             })
         } catch (err) {
@@ -377,11 +434,15 @@ class Room extends Component {
             songDisplay,
             scores,
             currentTimer,
-            startButtonVisible
+            startButtonVisible,
+            navigateToChooseRoom
         } = this.state;
         let currentSongUrl = undefined
         if (queue.length > 0) {
             currentSongUrl = queue[0]["url"];
+        }
+        if (navigateToChooseRoom) {
+            return <Navigate to={"/"}/>
         }
         return (<div>
             <NavBar/>
@@ -405,16 +466,17 @@ class Room extends Component {
                         <Text>Scores</Text>
 
 
+                        {/*SCOREBOARD*/}
                         <Table variant="simple" size={"sm"}>
 
                             <Tbody>
-                                {scores.map(({score, username, ready,}, index) => (<Tr key={index}>
+                                {scores.map(({score, username, ready, chatColor,}, index) => (<Tr key={index}>
                                     <Td>
                                         <HStack fontWeight={"bold"}>
                                             {ready ? <CheckIcon/> : <CloseIcon/>}
 
 
-                                            <Text color={"teal"}>
+                                            <Text color={chatColor}>
                                                 {username}
                                             </Text>
                                             <Text>
@@ -450,15 +512,15 @@ class Room extends Component {
 
                         </HStack>}
 
-                        {/*SCOREBOARD*/}
+                        {/*CHAT*/}
                         <Box overflowY="auto" maxHeight="320px" width={"100%"} display={"flex"}
                              flexDirection={"column-reverse"}>
                             <Table variant="simple" size={"sm"}>
                                 <Tbody>
-                                    {chatMessages.map(({user, message, guessedCount}, index) => (<Tr key={index}>
+                                    {chatMessages.map(({user, message, guessedCount, chatColor}, index) => (<Tr key={index}>
                                         <Td>
                                             <HStack color={"blue"} fontWeight={"bold"}>
-                                                <Text color={"teal"}>
+                                                <Text color={chatColor}>
                                                     {user}
                                                 </Text>
                                                 <Text>
@@ -498,9 +560,9 @@ class Room extends Component {
                             {/*<button onClick={this.handlePlayPause}>{playing ? 'Pause' : 'Play'}</button>*/}
                             {startButtonVisible ?
                                 ready ? <Button onClick={this.handleReadyChange}
-                                             colorScheme={"red"}>{'Unready'}</Button> :
-                                <Button onClick={this.handleReadyChange} colorScheme={"blue"}>{'Ready'}</Button>
-                            : ""
+                                                colorScheme={"red"}>{'Unready'}</Button> :
+                                    <Button onClick={this.handleReadyChange} colorScheme={"blue"}>{'Ready'}</Button>
+                                : ""
                             }
 
 

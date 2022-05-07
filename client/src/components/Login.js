@@ -69,44 +69,44 @@ class Login extends Component {
                         boxShadow={'lg'}
                         p={8}>
                         <form onSubmit={this.handleSubmit}>
-                        <Stack spacing={4}>
-                            <FormControl isRequired>
-                                <FormLabel htmlFor='userName'>User name</FormLabel>
-                                <Input type="text"
-                                       name={"userName"}
-                                       required={true}
-                                       autoComplete="on"
-                                       onChange={(e) => this.setState({userName: e.target.value})}
-                                />
+                            <Stack spacing={4}>
+                                <FormControl isRequired>
+                                    <FormLabel htmlFor='userName'>User name</FormLabel>
+                                    <Input type="text"
+                                           name={"userName"}
+                                           required={true}
+                                           autoComplete="on"
+                                           onChange={(e) => this.setState({userName: e.target.value})}
+                                    />
 
-                            </FormControl>
-                            <FormControl isRequired>
-                                <FormLabel htmlFor='password'>Password</FormLabel>
-                                <Input type="password"
-                                       name={"password"}
-                                       required={true}
-                                       autoComplete="on"
-                                       onChange={(e) => this.setState({password: e.target.value})}
-                                />
-                            </FormControl>
-                            <Stack spacing={10}>
-                                <Stack
-                                    direction={{base: 'column', sm: 'row'}}
-                                    align={'start'}
-                                    justify={'space-between'}>
-                                    <Link href={"/register"} color={'blue.400'}>Don't have an account?</Link>
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormLabel htmlFor='password'>Password</FormLabel>
+                                    <Input type="password"
+                                           name={"password"}
+                                           required={true}
+                                           autoComplete="on"
+                                           onChange={(e) => this.setState({password: e.target.value})}
+                                    />
+                                </FormControl>
+                                <Stack spacing={10}>
+                                    <Stack
+                                        direction={{base: 'column', sm: 'row'}}
+                                        align={'start'}
+                                        justify={'space-between'}>
+                                        <Link href={"/register"} color={'blue.400'}>Don't have an account?</Link>
+                                    </Stack>
+                                    <Button
+                                        type={"submit"}
+                                        bg={'blue.400'}
+                                        color={'white'}
+                                        _hover={{
+                                            bg: 'blue.500',
+                                        }}>
+                                        Sign in
+                                    </Button>
                                 </Stack>
-                                <Button
-                                    type={"submit"}
-                                    bg={'blue.400'}
-                                    color={'white'}
-                                    _hover={{
-                                        bg: 'blue.500',
-                                    }}>
-                                    Sign in
-                                </Button>
                             </Stack>
-                        </Stack>
                         </form>
                     </Box>
                 </Stack>

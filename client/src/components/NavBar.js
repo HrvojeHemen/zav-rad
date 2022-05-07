@@ -1,12 +1,14 @@
 import {Link} from "react-router-dom";
-import {HStack, Text} from "@chakra-ui/react";
+import {Center, Divider, HStack, Text, VStack} from "@chakra-ui/react";
+import jwt from "jsonwebtoken";
+import {auth} from "./useTokenClass";
 
-const {Component} = require("react");
+const MenuItem = ({children, to = "/", ...rest}) => {
 
+    if (to === window.location.pathname) return <></>
 
-const MenuItem = ({children, isLast, to = "/", ...rest}) => {
     return (
-        <Link to={to} >
+        <Link to={to}>
             <Text display="block" color={"dodgerblue"}  {...rest}>
                 {children}
             </Text>
@@ -14,25 +16,28 @@ const MenuItem = ({children, isLast, to = "/", ...rest}) => {
     )
 }
 
-class NavBar extends Component {
+const NavBar = () => {
+    let decoded = jwt.decode(auth.token, undefined)
 
 
-    render() {
+    return <Center>
+        <VStack>
+            <HStack spacing={8}
+                    align="center"
+                    justify={["center", "space-between", "flex-end", "flex-end"]}
+                    direction={["column", "row", "row", "row"]}
+                    pt={[4, 4, 0, 0]}>
 
-        return <HStack spacing={8}
-                       align="center"
-                       justify={["center", "space-between", "flex-end", "flex-end"]}
-                       direction={["column", "row", "row", "row"]}
-                       pt={[4, 4, 0, 0]}>
+                <MenuItem to={"/choose-room"}>Choose room</MenuItem>
+                <MenuItem to={"/profile"}>Profile</MenuItem>
+                {decoded.role === 0 ? <MenuItem to={"/adminDashboard"}>Admin Dashboard</MenuItem> : ""}
+            </HStack>
+            <Divider/>
+            <br/>
+        </VStack>
 
-            <MenuItem to={"/login"}>Log In</MenuItem>
-            <MenuItem to={"/register"}>Register</MenuItem>
-            <MenuItem to={"/choose-room"}>Choose room</MenuItem>
-            <MenuItem to={"/profile"}>Profile</MenuItem>
 
-        </HStack>
-
-    }
+    </Center>
 
 }
 

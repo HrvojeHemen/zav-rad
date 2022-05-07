@@ -24,8 +24,8 @@ function chat(io) {
                 for (let [key, value] of Object.entries(rooms[currentRoom]["users"])) {
                     console.log(key, value)
                     console.log("Destructuring obj", value)
-                    let {score, username, ready} = value
-                    res.push({"id": key, "score": score, "username": username, "ready": ready})
+                    let {score, username, ready, chatColor} = value
+                    res.push({"id": key, "score": score, "username": username, "ready": ready, "chatColor": chatColor})
                 }
                 io.to(socket['currentRoom']).emit("scoreBoardUpdate", res)
                 io.to(socket['currentRoom']).emit("scoreBoardUpdate", res)
@@ -47,6 +47,9 @@ function chat(io) {
 
         let updateScoresIfNeeded = function (data) {
             let currentRoom = socket['currentRoom']
+            if (currentRoom === undefined) {
+                return;
+            }
             if (!rooms[currentRoom]['allowedToGuess']) return
 
             console.log(data)
@@ -88,29 +91,35 @@ function chat(io) {
 
 
         let leaveCurrentRoomIfInAny = function () {
-            let currentRoom = socket['currentRoom']
-            console.log(currentRoom)
+            try{
+                let currentRoom = socket['currentRoom']
+                console.log(currentRoom)
 
-            if (currentRoom !== undefined) {
+                if (currentRoom !== undefined) {
 
-                console.log("Left a room with name", currentRoom)
-                socket.leave(currentRoom)
+                    console.log("Left a room with name", currentRoom)
+                    socket.leave(currentRoom)
 
-                delete rooms[currentRoom]["users"][socket['userId']];
+                    delete rooms[currentRoom]["users"][socket['userId']];
 
-                //we left the room, we alert that someone left
-                alertRoomOfChange()
+                    //we left the room, we alert that someone left
+                    alertRoomOfChange()
 
 
-                if (Object.keys(rooms[currentRoom]["users"]).length < 1) {
-                    console.log("Deleting current room because it was empty")
-                    delete rooms[currentRoom]
+                    if (Object.keys(rooms[currentRoom]["users"]).length < 1) {
+                        console.log("Deleting current room because it was empty")
+                        delete rooms[currentRoom]
+                    }
+
                 }
 
+                //just in case
+                socket.leaveAll();
             }
-
-            //just in case
-            socket.leaveAll();
+            catch (e) {
+                console.log("ERROR IN LEAVECURRENTROOMIFANY")
+                console.log(e)
+            }
         }
 
         socket.on("playPause", function (data) {
@@ -128,7 +137,6 @@ function chat(io) {
 
         socket.on("startGameServerHost", async function (data) {
 
-
             let {queue} = data;
             let songs = queue.songs
             let currentRoom = socket['currentRoom'];
@@ -143,7 +151,7 @@ function chat(io) {
                 }
             }
             resetScores();
-            try{
+            try {
                 console.log("Playing songs " + songs, ",", songs.length)
                 if (currentRoom !== undefined) {
                     while (songs.length > 0 && currentRoom in rooms) {
@@ -169,7 +177,7 @@ function chat(io) {
                             }
                         }
 
-                        if (early) continue
+                        //if (early) continue
 
                         //show title, disable guessing and wait Y seconds
                         io.to(currentRoom).emit("showTitle", song);
@@ -181,8 +189,7 @@ function chat(io) {
                     io.to(currentRoom).emit("quizDone");
                     rooms[currentRoom]['allowedToGuess'] = false;
                 }
-            }
-            catch(err){
+            } catch (err) {
                 console.log("err in start quiz")
             }
 
@@ -192,8 +199,16 @@ function chat(io) {
 
         socket.on("chatMessage", function (data) {
             console.log("Emitting chat message to the game room")
-            console.log(data)
+
+            let chatColor = "#008080"
+            try {
+                chatColor = rooms[socket['currentRoom']]['users'][data.source].chatColor
+            } catch (e) {
+                console.log("User doesnt exist")
+            }
+            data['chatColor'] = chatColor
             updateScoresIfNeeded(data)
+            console.log(data)
             io.to(socket['currentRoom']).emit("chatMessage", data)
         })
 
@@ -202,9 +217,17 @@ function chat(io) {
             console.log("Disconnected")
         })
 
+        socket.on("leaveRoom", function() {
+            leaveCurrentRoomIfInAny()
+            console.log("Disconnected manually with leave Room")
+        })
+
         socket.on("changeReady", function (data) {
             let {userId, ready} = data;
             let currentRoom = socket['currentRoom']
+            if (currentRoom === undefined) {
+                return
+            }
             console.log("User ready? ", userId, ready)
             rooms[currentRoom]["users"][userId]['ready'] = ready;
             alertRoomOfChange()
@@ -212,6 +235,7 @@ function chat(io) {
 
 
         socket.on("joinRoom", function (data) {
+            let randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16).toUpperCase();
             let {roomName, userId, username} = data;
             // console.log(`User with id "${userId}" joined room "${roomName}"`)
 
@@ -219,7 +243,8 @@ function chat(io) {
 
             socket['currentRoom'] = roomName;
             socket['userId'] = userId;
-            socket.join(roomName)
+            socket['chatColor'] = randomColor;
+            socket.join(roomName);
 
             let currentRoom = socket['currentRoom']
             //if room doesnt exist create it
@@ -227,10 +252,21 @@ function chat(io) {
                 rooms[currentRoom] = {"users": {}}
             }
 
-            rooms[currentRoom]["users"][userId] = {"score": 0, "username": username, "ready": false}
+            rooms[currentRoom]["users"][userId] = {
+                "score": 0,
+                "username": username,
+                "ready": false,
+                "chatColor": randomColor
+            }
 
             //we joined the room, we alert it
             alertRoomOfChange()
+        })
+
+        socket.on("checkRoom", function () {
+
+            let currentRoom = socket['currentRoom'];
+            io.to(socket.id).emit("checkRoom", currentRoom)
         })
     });
 }

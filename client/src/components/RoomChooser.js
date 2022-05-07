@@ -33,12 +33,13 @@ class RoomChooser extends Component {
     }
 
     render(){
-        const {redirect} = this.state;
-        if(redirect){
-            return <Navigate to={"/play"}/>
-        }
-        return (
+        const {redirect, roomName} = this.state;
 
+        if(redirect){
+            return <Navigate to={"/play?roomName=" + roomName}/>
+        }
+
+        return (
             <div>
                 <NavBar />
                 <Center>

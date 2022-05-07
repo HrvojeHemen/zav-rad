@@ -20,7 +20,7 @@ import axios from "axios";
 
 const PlaylistViewer = () => {
 
-    let decoded = jwt.decode(auth.token)
+    let decoded = jwt.decode(auth.token, undefined)
 
     const [loaded, setLoaded] = useState(false)
     //allowed ? ownedByUs : ownedBySomeoneElse
@@ -57,42 +57,38 @@ const PlaylistViewer = () => {
     }
 
     useEffect(() => {
-        if (!loaded) {
-            setLoaded(true)
-            fetch(process.env.REACT_APP_API_URL + "/playlist/byId/" + id)
-                .then(res => res.json())
-                .then(
-                    (result) => {
+        if (loaded) return;
+        setLoaded(true)
+        fetch(process.env.REACT_APP_API_URL + "/playlist/byId/" + id)
+            .then(res => res.json())
+            .then(
+                (result) => {
 
-                        if (result === undefined || result === null) {
-                            setValid(false)
-                            return
-                        }
-
-
-                        setOwner(result['creator']['username'])
-                        if (parseInt(result['creator_id']) !== parseInt(decoded.id)) {
-                            setAllowed(false)
-                        }
-
-                        setSongs(result['songs'])
-
-
-                    },
-                    (error) => {
-                        console.log("Error in api fetch", error)
+                    if (result === undefined || result === null) {
+                        setValid(false)
+                        return
                     }
-                )
-
-            fetch(process.env.REACT_APP_API_URL + "/playlist/subscription/" + decoded.id + "/" + id)
-                .then(res => res.json())
-                .then((result) => {
-                    setSubscribed(result.status)
-                })
 
 
+                    setOwner(result['creator']['username'])
+                    if (parseInt(result['creator_id']) !== parseInt(decoded.id)) {
+                        setAllowed(false)
+                    }
 
-        }
+                    setSongs(result['songs'])
+
+
+                },
+                (error) => {
+                    console.log("Error in api fetch", error)
+                }
+            )
+
+        fetch(process.env.REACT_APP_API_URL + "/playlist/subscription/" + decoded.id + "/" + id)
+            .then(res => res.json())
+            .then((result) => {
+                setSubscribed(result.status)
+            })
     }, [loaded, id, decoded.id, owner, subscribed])
 
 

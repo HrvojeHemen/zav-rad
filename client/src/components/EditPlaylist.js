@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {
     Button,
     ButtonGroup,
-    Center,
+    Center, FormLabel, HStack,
     IconButton,
     Input,
     Popover,
@@ -161,13 +161,39 @@ const EditPlaylist = () => {
 
             })
     }
+    const addToPlaylistWithPlaylist = () => {
+        let text = document.getElementById("addToPlaylist").value.trim();
+        if (text.length === 0) return;
+        axios.post(process.env.REACT_APP_API_URL + "/playlist/addToPlaylistWithYoutubePlaylist",
+            {"url": text, "playlist_id": id}
+        ).then(() => {
+            window.location.reload();
+        })
+
+        console.log(text)
+
+    }
 
     if (redirect) return <Navigate to={'/my-playlists'}/>
     else
         return <div>
             <NavBar/>
             <Center>
+
                 <VStack width={"100%"}>
+
+                    <Text>
+                        If you want to add new songs, there are 2 ways;<br/>
+                        1) Make a youtube playlist, put its link here and click the left button<br/>
+                        2) Put song links divided by comma, and click the right button (I do not recommend this)<br/>
+                    </Text>
+                    <Input type={"text"} id={"addToPlaylist"} width={"40%"}/>
+                    <HStack>
+                        <Button onClick={addToPlaylistWithPlaylist}>Add songs as a YouTube playlist
+                            (Recommended)</Button>
+                        <Button>Add songs as YouTube links (Much slower)</Button>
+                    </HStack>
+
                     <Table variant="simple" size={"sm"} fontSize='sm'>
                         <TableCaption>Edit the songs as needed</TableCaption>
                         <Thead>

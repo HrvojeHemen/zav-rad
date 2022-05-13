@@ -92,7 +92,6 @@ class Profile extends Component {
             <Center>
                 <VStack>
                     <NavBar/>
-
                     <HStack>
                         <Box
                             rounded={'lg'}

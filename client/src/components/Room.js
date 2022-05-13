@@ -8,7 +8,7 @@ import {
     Box, Button, Center, HStack, Input, Progress, Select, Table, Tbody, Td, Text, Tr, VStack
 } from '@chakra-ui/react'
 import jwt from "jsonwebtoken";
-import {CheckIcon, CloseIcon} from "@chakra-ui/icons";
+import {ArrowRightIcon, CheckIcon, CloseIcon} from "@chakra-ui/icons";
 
 import readySound from "../sounds/readySound.wav";
 import messageSound from "../sounds/messageSound.wav";
@@ -160,14 +160,9 @@ class Room extends Component {
     }.bind(this)
 
     handleScoreBoardUpdate = function (data) {
-        let newScores = []
-        for (let i = 0; i < data.length; i++) {
-            let {score, username} = data[i]
-            newScores.push({
-                "score": score, "username": username
-            })
-        }
         // console.log(newScores)
+
+        console.log("RECEIVED ", data)
         this.setState({scores: data}, () => {
             // console.log("Received score update", newScores)
         })
@@ -470,11 +465,11 @@ class Room extends Component {
                         <Table variant="simple" size={"sm"}>
 
                             <Tbody>
-                                {scores.map(({score, username, ready, chatColor,}, index) => (<Tr key={index}>
+                                {scores.map(({score, username, ready, chatColor, skip,}, index) => (<Tr key={index}>
                                     <Td>
                                         <HStack fontWeight={"bold"}>
                                             {ready ? <CheckIcon/> : <CloseIcon/>}
-
+                                            {skip ? <ArrowRightIcon/> : ""}
 
                                             <Text color={chatColor}>
                                                 {username}

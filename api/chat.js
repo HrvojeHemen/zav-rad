@@ -24,11 +24,13 @@ function chat(io) {
                 for (let [key, value] of Object.entries(rooms[currentRoom]["users"])) {
                     console.log(key, value)
                     console.log("Destructuring obj", value)
-                    let {score, username, ready, chatColor} = value
-                    res.push({"id": key, "score": score, "username": username, "ready": ready, "chatColor": chatColor})
+                    let {score, username, ready, chatColor, skip} = value
+                    res.push({"id": key, "score": score, "username": username, "ready": ready, "chatColor": chatColor, "skip" : skip})
                 }
+                //OVDJE SAM BIO REMOVEAO DUPLIKAT LINIJU IDK ZASTO JE BILO, AKO NES NE RADI MYB OVO
                 io.to(socket['currentRoom']).emit("scoreBoardUpdate", res)
-                io.to(socket['currentRoom']).emit("scoreBoardUpdate", res)
+                // io.to(socket['currentRoom']).emit("scoreBoardUpdate", res)
+
             } catch (err) {
                 console.log("Error caught", err)
                 console.log("Probably because user got to play without joining a room first")
@@ -36,13 +38,38 @@ function chat(io) {
 
         }
 
+
         let resetScores = function () {
             let currentRoom = socket['currentRoom']
             if (rooms[currentRoom] !== undefined) {
                 for (const us in rooms[currentRoom]["users"]) {
                     rooms[currentRoom]["users"][us]['score'] = 0
+                    rooms[currentRoom]["users"][us]['skip'] = false
                 }
             }
+        }
+        let resetSkips = function() {
+            let currentRoom = socket['currentRoom']
+            if (rooms[currentRoom] !== undefined) {
+                for (const us in rooms[currentRoom]["users"]) {
+                    rooms[currentRoom]["users"][us]['skip'] = false
+                }
+            }
+        }
+        let shouldISkip = function() {
+            let currentRoom = socket['currentRoom']
+            if( rooms[currentRoom] === undefined ) return false;
+            let count = 0
+            let total = 0
+
+            for(const us in rooms[currentRoom]["users"]){
+                let user = rooms[currentRoom]["users"][us]
+                if(user['skip']) count++
+                total++
+            }
+
+            if (total === 0) return false
+            return count / total > 0.5
         }
 
         let updateScoresIfNeeded = function (data) {
@@ -76,8 +103,7 @@ function chat(io) {
                 addPoints = 3;
             }
 
-            if (addPoints > 0) {
-
+            if (addPoints > 0 || rooms[socket['currentRoom']]['users'][source]['skip']) {
                 let userId = socket['userId']
                 rooms[currentRoom]["users"][userId]['score'] += addPoints
                 console.log("Points changed")
@@ -162,6 +188,8 @@ function chat(io) {
                         //play song, allow guessing and wait X seconds
                         io.to(currentRoom).emit("playSong", song);
                         rooms[currentRoom]['allowedToGuess'] = true;
+                        resetSkips()
+                        alertRoomOfChange()
 
 
                         rooms[currentRoom]['guessed'] = [false, false]
@@ -170,7 +198,8 @@ function chat(io) {
 
                             await new Promise(r => setTimeout(r, SONG_LENGTH / 50));
 
-                            if (rooms[currentRoom] && rooms[currentRoom]['guessed'] && rooms[currentRoom]['guessed'][0] && rooms[currentRoom]['guessed'][1]) {
+                            if (rooms[currentRoom] && rooms[currentRoom]['guessed'] && rooms[currentRoom]['guessed'][0] && rooms[currentRoom]['guessed'][1]
+                            || shouldISkip()) {
                                 console.log("QUITTING EARLY")
                                 early = true
                                 break
@@ -202,6 +231,12 @@ function chat(io) {
 
             let chatColor = "#008080"
             try {
+
+                let {message} = data
+                if(message.toLowerCase() === "!skip"){
+                    rooms[socket['currentRoom']]['users'][data.source]['skip'] = true
+                }
+
                 chatColor = rooms[socket['currentRoom']]['users'][data.source].chatColor
             } catch (e) {
                 console.log("User doesnt exist")

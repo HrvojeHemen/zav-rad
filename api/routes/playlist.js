@@ -98,8 +98,6 @@ router.get('/subscriptions/:id', async function (req, res, next) {
 })
 
 
-
-
 getAllPlaylistsForUser = async function (user_id) {
     let res = await db.query(`SELECT *
                               from playlists
@@ -109,7 +107,8 @@ getAllPlaylistsForUser = async function (user_id) {
 
 getAllSubscriptionsForUser = async function (user_id) {
     let res = await db.query(`SELECT *
-                              from subscriptions join playlists p on p.id = subscriptions.playlist_id
+                              from subscriptions
+                                       join playlists p on p.id = subscriptions.playlist_id
                               where user_id = '${user_id}'`);
     return res.rows;
 }
@@ -137,8 +136,6 @@ router.post("/", async function (req, res, next) {
                 console.log(err)
             }
         }
-
-        // }
     } catch (err) {
         console.log("Error while creating playlist", err)
     }
@@ -146,8 +143,34 @@ router.post("/", async function (req, res, next) {
     res.json(
         {id: playlist_id}
     )
+});
+
+//change urls variable to yt_playlist_id variable
+router.post("/addToPlaylistWithYoutubePlaylist", async function (req, res, next) {
+    console.log("Body: ", req.body)
+    let {url, playlist_id} = req.body;
+    url = url.trim()
+    console.log(url, playlist_id)
+    try {
+        let playlistInfo = await ytpl(url, {pages: 25})
+
+        for (let playlistInfoElement of playlistInfo.items) {
+            let title = playlistInfoElement.title;
+            let url = playlistInfoElement.shortUrl;
 
 
+            try {
+                let songId = await createSong(playlist_id, title, url)
+                console.log("Created song with id: " + songId)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+    } catch (err) {
+        console.log("Error while creating playlist", err)
+    }
+
+    res.sendStatus(200)
 });
 
 

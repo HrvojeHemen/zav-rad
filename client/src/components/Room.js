@@ -15,7 +15,7 @@ import messageSound from "../sounds/messageSound.wav";
 
 
 class Room extends Component {
-    amountOfSongs = 10;
+    amountOfSongs = 1;
     decoded = jwt.decode(auth.token)
     songLength = 15000;
     allowedDistance = 5

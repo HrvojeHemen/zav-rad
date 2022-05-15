@@ -21,7 +21,7 @@ app.set("port", port);
 
 var server = http.createServer(app);
 
-var chat = require('../chat');
+var chat = require('../socketImpl');
 var socketio = require('socket.io');
 
 var io = socketio(server,{

@@ -2,13 +2,14 @@
 //   asd: { users: { '0': {score: xx}}, '1': {score: xx} } },
 //   bsd: { users: { '1': {score: xx} } }
 // }
+const axios = require("axios");
 const SONG_LENGTH = 20000;
 const TITLE_LENGTH = 5000;
 
 let rooms = {}
 let cur = 0
 
-function chat(io) {
+function socketImpl(io) {
     io.on('connection', (socket) => {
         //socket.join("room")
         console.log("Connected")
@@ -95,13 +96,15 @@ function chat(io) {
                 addPoints++;
             }
 
-            console.log("G " + rooms[currentRoom]['guessed'])
-
             // = 3, if token1 is correct or token2 is correct,
-            // it would give too many points, so with =3 we reset it to max 3
+            // it would give too many points, so with = 3 we reset it to max 3
             if (tokenBoth) {
+                rooms[currentRoom]['guessed'][0] = true;
+                rooms[currentRoom]['guessed'][1] = true
                 addPoints = 3;
             }
+
+            console.log("G " + rooms[currentRoom]['guessed'])
 
             if (addPoints > 0 || rooms[socket['currentRoom']]['users'][source]['skip']) {
                 let userId = socket['userId']
@@ -144,6 +147,7 @@ function chat(io) {
             }
             catch (e) {
                 console.log("ERROR IN LEAVECURRENTROOMIFANY")
+                console.log("EXPECTED IF CHANGED TO SOME VIEW THEN QUIT")
                 console.log(e)
             }
         }
@@ -162,8 +166,10 @@ function chat(io) {
         })
 
         socket.on("startGameServerHost", async function (data) {
-
+            console.log("STARTING GAME")
+            console.log(data)
             let {queue} = data;
+            let playlistID = queue['id'];
             let songs = queue.songs
             let currentRoom = socket['currentRoom'];
             let counter = 0;
@@ -215,6 +221,17 @@ function chat(io) {
 
                     }
                     console.log("EMMITING DONE")
+                    console.log(rooms[currentRoom])
+
+                    axios.post(process.env.API_URL + "/stats/save",
+                        {
+                            room: rooms[currentRoom],
+                            playlistID: playlistID
+                        }, {headers: {'Content-Type': undefined}})
+                        .then(r => {
+                            console.log("Saved")
+                        })
+
                     io.to(currentRoom).emit("quizDone");
                     rooms[currentRoom]['allowedToGuess'] = false;
                 }
@@ -291,7 +308,8 @@ function chat(io) {
                 "score": 0,
                 "username": username,
                 "ready": false,
-                "chatColor": randomColor
+                "chatColor": randomColor,
+                "id": userId
             }
 
             //we joined the room, we alert it
@@ -306,4 +324,4 @@ function chat(io) {
     });
 }
 
-module.exports = chat;
+module.exports = socketImpl;

@@ -13,6 +13,7 @@ const usersRouter = require('./routes/users');
 const playlistRouter = require('./routes/playlist')
 const registerRouter = require('./routes/register')
 const loginRouter = require('./routes/login')
+const statsRouter = require('./routes/stats')
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/users', usersRouter);
 app.use('/playlist', playlistRouter);
 app.use('/register', registerRouter);
 app.use('/login', loginRouter)
+app.use('/stats', statsRouter)
 
 
 // app.use(session({

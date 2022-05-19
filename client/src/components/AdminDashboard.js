@@ -6,7 +6,7 @@ import {
     Box,
     Center, Divider, Heading,
     HStack,
-    IconButton,
+    IconButton, Link,
     Table,
     TableCaption,
     Tbody,
@@ -27,12 +27,15 @@ const AdminDashboard = () => {
 
     const [loaded, setLoaded] = useState(false)
     const [allUsers, setAllUsers] = useState([]);
+    const [allPlaylists, setAllPlaylists] = useState([]);
+
     useEffect(() => {
         if (loaded) return;
         setLoaded(true)
 
 
         loadUsers()
+        loadPlaylists()
 
     }, [loaded, allUsers])
 
@@ -53,6 +56,24 @@ const AdminDashboard = () => {
                 }
 
                 setAllUsers(currentUsers)
+            })
+
+    }
+    let loadPlaylists = () => {
+        fetch(process.env.REACT_APP_API_URL + "/playlist/all")
+            .then(res => res.json())
+            .then((res) => {
+                if (res === undefined || res === null) {
+                    return "ERROR WHEN GETTING ALL playlisys"
+                }
+                console.log(res)
+
+                let currentPlaylists = []
+                for (let pl of res) {
+                    currentPlaylists.push(pl)
+                }
+
+                setAllPlaylists(currentPlaylists)
             })
 
     }
@@ -112,6 +133,24 @@ const AdminDashboard = () => {
                                         }}
                                     />
                                 </Td>
+                            </Tr>))}
+                    </Tbody>
+                </Table>
+                <Table variant="simple" size={"sm"} >
+                    <TableCaption>All playlists</TableCaption>
+                    <Thead>
+                        <Tr>
+                            <Th>ID</Th>
+                            <Th>NAME</Th>
+                            <Th>URL</Th>
+                        </Tr>
+                    </Thead>
+                    <Tbody>
+                        {allPlaylists.map(({id, name, }, index) => (
+                            <Tr key={index}>
+                                <Td>{id}</Td>
+                                <Td>{name}</Td>
+                                <Td><Link isExternal={false} href={"/playlist/" + id}>Click me</Link></Td>
                             </Tr>))}
                     </Tbody>
                 </Table>

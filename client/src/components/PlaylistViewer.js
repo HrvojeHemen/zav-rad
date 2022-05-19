@@ -12,7 +12,7 @@ import {
     Tr,
     VStack
 } from "@chakra-ui/react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import jwt from "jsonwebtoken";
 import {auth} from "./useTokenClass";
 import NavBar from "./NavBar";
@@ -52,11 +52,12 @@ const PlaylistViewer = () => {
     }
 
     let importPlaylist = () => {
-
+        axios.post(process.env.REACT_APP_API_URL + "/playlist/import/" + decoded.id + "/" + id).then(r => console.log("Imported",r))
 
     }
 
     useEffect(() => {
+
         if (loaded) return;
         setLoaded(true)
         fetch(process.env.REACT_APP_API_URL + "/playlist/byId/" + id)
@@ -95,6 +96,9 @@ const PlaylistViewer = () => {
     if (!valid) {
         return <Text>Playlist with id={id} doesn't exist</Text>
     }
+    if(allowed){
+        return <Navigate to={"/edit-playlist/" + id}/>
+    }
 
 
     return <div>
@@ -128,7 +132,7 @@ const PlaylistViewer = () => {
                 </Table>
 
                 <HStack>
-                    {allowed ? "" : <Button colorScheme={'blue'}>Import</Button>}
+                    {allowed ? "" : <Button colorScheme={'blue'} onClick={importPlaylist}>Import</Button>}
                     {allowed ? "" : <Button colorScheme={subscribed ? "red" : "green"}
                                             onClick={changeSubscriptionStatus}>
                         {subscribed ? "Unsubscribe" : "Subscribe"}</Button>}

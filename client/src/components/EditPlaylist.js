@@ -183,15 +183,12 @@ const EditPlaylist = () => {
                 <VStack width={"100%"}>
 
                     <Text>
-                        If you want to add new songs, there are 2 ways;<br/>
-                        1) Make a youtube playlist, put its link here and click the left button<br/>
-                        2) Put song links divided by comma, and click the right button (I do not recommend this)<br/>
+                        If you want to add new songs, do the following;<br/>
+                        Make a youtube playlist, put its link here and click the left button<br/>
                     </Text>
                     <Input type={"text"} id={"addToPlaylist"} width={"40%"}/>
                     <HStack>
-                        <Button onClick={addToPlaylistWithPlaylist}>Add songs as a YouTube playlist
-                            (Recommended)</Button>
-                        <Button>Add songs as YouTube links (Much slower)</Button>
+                        <Button onClick={addToPlaylistWithPlaylist}>Add songs as a YouTube playlist</Button>
                     </HStack>
 
                     <Table variant="simple" size={"sm"} fontSize='sm'>

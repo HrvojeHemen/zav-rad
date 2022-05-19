@@ -293,6 +293,33 @@ router.post('/unsubscribe/:userId/:playlistId', async function (req, res, next) 
     }
 })
 
+router.post('/import/:userId/:playlistId', async function (req, res, next) {
+    let {userId, playlistId} = req.params;
+    try {
+        let playlist = (await getPlaylistById(playlistId))[0];
+        let {name} = playlist;
+        console.log(name)
+        let newId = await createPlaylist(name, userId);
+
+        console.log(playlist)
+
+        let songs = await getSongsFromPlaylist(playlistId)
+
+        for (const song of songs) {
+            let {id, url, token1, token2} = song
+            console.log(id, url, token1, token2)
+
+            await createSong(newId, token1 + " - " + token2, url)
+
+        }
+
+        res.sendStatus(200)
+    } catch (err) {
+        console.log(err)
+        res.json(err)
+    }
+})
+
 router.post('/delete/:userId/:playlistId', async function (req, res, next) {
     let {userId, playlistId} = req.params;
 

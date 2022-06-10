@@ -5,7 +5,6 @@
 const axios = require("axios");
 const SONG_LENGTH = 20000;
 const TITLE_LENGTH = 5000;
-
 let rooms = {}
 let cur = 0
 

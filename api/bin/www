@@ -24,20 +24,8 @@ var server = http.createServer(app);
 var chat = require('../socketImpl');
 var socketio = require('socket.io');
 
-var io = socketio(server,{
+const io = socketio(server,{
     cors: {
-        // origins: ['*'],
-        // methods: ['GET', 'POST','HEAD','PUT','OPTIONS'],
-        //
-        // handlePreflightRequest:(req,res) => {
-        //     res.writeHead(200, {
-        //         "Access-Control-Allow-Origin": "*",
-        //         "Access-Control-Allow-Methods": "GET,HEAD,OPTIONS,POST,PUT",
-        //         "Access-Control-Allow-Headers": "Origin, X-Requested-With," +
-        //             " Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization"
-        // });
-        //     res.end();
-        // }
         origin: "*",
         methods:['GET','POST']
     }

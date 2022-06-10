@@ -61,7 +61,6 @@ function App() {
                         <Route path='/play' element={<Room/>}/>
                     </Route>
 
-
                     <Route path='/logout' element={<PrivateRoute/>}>
                         <Route path='/logout' element={<Logout/>}/>
                     </Route>

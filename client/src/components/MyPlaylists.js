@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import NavBar from "./NavBar";
 import {auth} from "./useTokenClass";
-import {Button, Center, Table, Tbody, Td, Text, Tr, VStack} from "@chakra-ui/react";
+import {Button, Center, Heading, Table, Tbody, Td, Text, Tr, VStack} from "@chakra-ui/react";
 import jwt from "jsonwebtoken";
 import {Navigate} from "react-router-dom";
 
@@ -58,7 +58,9 @@ class MyPlaylists extends Component {
                 <NavBar/>
 
                 <Center>
+
                     <VStack>
+                        <Heading>My playlists</Heading>
                         <Button onClick={this.redirectToCreate} colorScheme={'blue'}> CREATE A PLAYLIST </Button>
 
                         <Text>Click on a playlist to edit it</Text>

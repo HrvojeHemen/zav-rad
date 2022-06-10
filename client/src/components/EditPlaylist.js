@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {
     Button,
     ButtonGroup,
-    Center, FormLabel, HStack,
+    Center, FormLabel, Heading, HStack,
     IconButton,
     Input,
     Popover,
@@ -30,6 +30,8 @@ import {auth} from "./useTokenClass";
 import NavBar from "./NavBar";
 import {CheckIcon, DeleteIcon} from "@chakra-ui/icons";
 import axios from "axios";
+import {IDataTableProps} from "react-data-table-component";
+import DataTable from 'react-data-table-component';
 
 
 const EditPlaylist = () => {
@@ -44,7 +46,25 @@ const EditPlaylist = () => {
 
     const {id} = useParams();
 
-    // console.log(id)
+    const columns = [
+        {
+            name: 'URL',
+            selector: row => row.url,
+        },
+        {
+            name: 'Artist',
+            selector: row => row.token1,
+        },
+        {
+            name: 'Title',
+            selector: row => row.token2,
+        },
+        {
+            name: 'actions',
+            selector: row => row.actions,
+        }
+    ];
+
 
 
     useEffect(() => {
@@ -66,6 +86,31 @@ const EditPlaylist = () => {
                         if (parseInt(result['creator_id']) !== parseInt(decoded.id)) {
                             setAllowed(false)
                             return
+                        }
+
+                        for(let i = 0; i < result['songs'].length; i++){
+                            let sng = result['songs'][i]
+                            let id = sng['id']
+
+                            result['songs'][i].actions =
+                                <>
+                                    <IconButton
+                                        colorScheme={'green'}
+                                        icon={<CheckIcon/>}
+                                        aria-label={'Save-Item'}
+                                        onClick={() => {
+                                            updateSong(id)
+                                        }}
+                                    />
+                                    <IconButton
+                                        colorScheme={'red'}
+                                        icon={<DeleteIcon/>}
+                                        aria-label={'Delete-Item'}
+                                        onClick={() => {
+                                            deleteSong(id)
+                                        }}
+                                    />
+                                </>
                         }
 
                         setSongs(result['songs'])
@@ -97,7 +142,6 @@ const EditPlaylist = () => {
                 if (r.data.err) {
                     alert(r.data.err)
                 } else {
-
 
                     setSongs(songs.filter(song => song.id !== id))
                 }
@@ -179,7 +223,7 @@ const EditPlaylist = () => {
         return <div>
             <NavBar/>
             <Center>
-
+                <Heading>Edit a playlist</Heading>
                 <VStack width={"100%"}>
 
                     <Text>
@@ -191,55 +235,58 @@ const EditPlaylist = () => {
                         <Button onClick={addToPlaylistWithPlaylist}>Add songs as a YouTube playlist</Button>
                     </HStack>
 
-                    <Table variant="simple" size={"sm"} fontSize='sm'>
-                        <TableCaption>Edit the songs as needed</TableCaption>
-                        <Thead>
-                            <Tr>
-                                <Th>Url</Th>
-                                <Th>Artist name</Th>
-                                <Th>Song name</Th>
-                            </Tr>
-                        </Thead>
-                        <Tbody>
-                            {songs.map(({id, url, token1, token2}) => (
-                                <Tr key={id}>
-                                    <Td>
-                                        <Input type={'text'}
-                                               defaultValue={url}
-                                               onChange={(e) => handleUrlChange(e.target.value, id)}
-                                        />
-                                    </Td>
-                                    <Td>
-                                        <Input type={'text'} defaultValue={token1}
-                                               onChange={(e) => handleToken1Change(e.target.value, id)}/>
-                                    </Td>
-                                    <Td>
-                                        <Input type={'text'} defaultValue={token2}
-                                               onChange={(e) => handleToken2Change(e.target.value, id)}/>
-                                    </Td>
 
-                                    <Td>
-                                        <IconButton
-                                            colorScheme={'green'}
-                                            icon={<CheckIcon/>}
-                                            aria-label={'Save-Item'}
-                                            onClick={() => {
-                                                updateSong(id)
-                                            }}
-                                        />
-                                        <IconButton
-                                            colorScheme={'red'}
-                                            icon={<DeleteIcon/>}
-                                            aria-label={'Delete-Item'}
-                                            onClick={() => {
-                                                deleteSong(id)
-                                            }}
-                                        />
-                                    </Td>
-                                </Tr>
-                            ))}
-                        </Tbody>
-                    </Table>
+                    <DataTable columns={columns} data={songs} pagination={true}/>
+
+                    {/*<Table variant="simple" size={"sm"} fontSize='sm'>*/}
+                    {/*    <TableCaption>Edit the songs as needed</TableCaption>*/}
+                    {/*    <Thead>*/}
+                    {/*        <Tr>*/}
+                    {/*            <Th>Url</Th>*/}
+                    {/*            <Th>Artist name</Th>*/}
+                    {/*            <Th>Song name</Th>*/}
+                    {/*        </Tr>*/}
+                    {/*    </Thead>*/}
+                    {/*    <Tbody>*/}
+                    {/*        {songs.map(({id, url, token1, token2}) => (*/}
+                    {/*            <Tr key={id}>*/}
+                    {/*                <Td>*/}
+                    {/*                    <Input type={'text'}*/}
+                    {/*                           defaultValue={url}*/}
+                    {/*                           onChange={(e) => handleUrlChange(e.target.value, id)}*/}
+                    {/*                    />*/}
+                    {/*                </Td>*/}
+                    {/*                <Td>*/}
+                    {/*                    <Input type={'text'} defaultValue={token1}*/}
+                    {/*                           onChange={(e) => handleToken1Change(e.target.value, id)}/>*/}
+                    {/*                </Td>*/}
+                    {/*                <Td>*/}
+                    {/*                    <Input type={'text'} defaultValue={token2}*/}
+                    {/*                           onChange={(e) => handleToken2Change(e.target.value, id)}/>*/}
+                    {/*                </Td>*/}
+
+                    {/*                <Td>*/}
+                    {/*                    <IconButton*/}
+                    {/*                        colorScheme={'green'}*/}
+                    {/*                        icon={<CheckIcon/>}*/}
+                    {/*                        aria-label={'Save-Item'}*/}
+                    {/*                        onClick={() => {*/}
+                    {/*                            updateSong(id)*/}
+                    {/*                        }}*/}
+                    {/*                    />*/}
+                    {/*                    <IconButton*/}
+                    {/*                        colorScheme={'red'}*/}
+                    {/*                        icon={<DeleteIcon/>}*/}
+                    {/*                        aria-label={'Delete-Item'}*/}
+                    {/*                        onClick={() => {*/}
+                    {/*                            deleteSong(id)*/}
+                    {/*                        }}*/}
+                    {/*                    />*/}
+                    {/*                </Td>*/}
+                    {/*            </Tr>*/}
+                    {/*        ))}*/}
+                    {/*    </Tbody>*/}
+                    {/*</Table>*/}
 
 
                     <Popover

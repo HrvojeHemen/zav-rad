@@ -6,7 +6,7 @@ import {
     Button,
     Center,
     FormControl,
-    FormLabel,
+    FormLabel, Heading,
     HStack,
     IconButton,
     Input,
@@ -92,6 +92,7 @@ class Profile extends Component {
             <Center>
                 <VStack>
                     <NavBar/>
+                    <Heading>My profile</Heading>
                     <HStack>
                         <Box
                             rounded={'lg'}

@@ -15,7 +15,7 @@ import messageSound from "../sounds/messageSound.wav";
 
 
 class Room extends Component {
-    amountOfSongs = 1;
+    amountOfSongs = 10;
     decoded = jwt.decode(auth.token)
     songLength = 15000;
     allowedDistance = 5
@@ -457,37 +457,6 @@ class Room extends Component {
 
             <Center marginTop={"3%"}>
                 <HStack width={"90%"} alignItems={"start"}>
-                    <VStack width={"30%"}>
-                        <Text>Scores</Text>
-
-
-                        {/*SCOREBOARD*/}
-                        <Table variant="simple" size={"sm"}>
-
-                            <Tbody>
-                                {scores.map(({score, username, ready, chatColor, skip,}, index) => (<Tr key={index}>
-                                    <Td>
-                                        <HStack fontWeight={"bold"}>
-                                            {ready ? <CheckIcon/> : <CloseIcon/>}
-                                            {skip ? <ArrowRightIcon/> : ""}
-
-                                            <Text color={chatColor}>
-                                                {username}
-                                            </Text>
-                                            <Text>
-                                                {":"}
-                                            </Text>
-                                            <Text>
-                                                {score}
-                                            </Text>
-                                        </HStack>
-                                    </Td>
-                                </Tr>))}
-                            </Tbody>
-
-                        </Table>
-
-                    </VStack>
 
                     {/*SONG TITLE*/}
                     <VStack maxHeight="90%" width={"50%"}>
@@ -577,6 +546,38 @@ class Room extends Component {
                         {!startButtonVisible && currentTimer !== null &&
                             <Progress value={100 - (currentTimer.getTimeLeft() / this.songLength) * 100}
                                       width={"80%"} colorScheme={"green"}/>}
+                    </VStack>
+
+                    <VStack width={"30%"}>
+                        <Text>Scores</Text>
+
+
+                        {/*SCOREBOARD*/}
+                        <Table variant="simple" size={"sm"}>
+
+                            <Tbody>
+                                {scores.map(({score, username, ready, chatColor, skip,}, index) => (<Tr key={index}>
+                                    <Td>
+                                        <HStack fontWeight={"bold"}>
+                                            {ready ? <CheckIcon/> : <CloseIcon/>}
+                                            {skip ? <ArrowRightIcon/> : ""}
+
+                                            <Text color={chatColor}>
+                                                {username}
+                                            </Text>
+                                            <Text>
+                                                {":"}
+                                            </Text>
+                                            <Text>
+                                                {score}
+                                            </Text>
+                                        </HStack>
+                                    </Td>
+                                </Tr>))}
+                            </Tbody>
+
+                        </Table>
+
                     </VStack>
                 </HStack>
             </Center>
